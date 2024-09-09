@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QLabel, QWidget, QPaintEvent, QMouseEvent
+from PySide6.QtWidgets import QLabel, QWidget
 from PySide6.QtCore import Qt, QPoint, Signal, QRect
-from PySide6.QtGui import QPainter, QPen
+from PySide6.QtGui import QPainter, QPen, QPixmap
 import math
 
 
@@ -23,6 +23,21 @@ class PainterLabel(QLabel):
         self.button_bef = Qt.NoButton
         self.dragging_objs_ori = []
         self.editing_objs = []
+
+    def atImageChanged(self, image_path):
+        if not image_path:
+            self.setPixmap(None)
+            self.is_paintable = False
+            self.updateCursor()
+        else:
+            try:
+                image = QPixmap(image_path)
+                self.setPixmap(image)
+                self.resize(image.size())
+            except Exception as e:
+                self.setPixmap(None)
+                self.is_paintable = False
+                self.updateCursor()
 
     def setIsPaintable(self, value):
         self.is_paintable = value
