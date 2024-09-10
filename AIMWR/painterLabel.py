@@ -24,20 +24,43 @@ class PainterLabel(QLabel):
         self.dragging_objs_ori = []
         self.editing_objs = []
 
+        self.zoom = 1.0
+        self.img_ori = None
+        self.img_show = None
+
     def atImageChanged(self, image_path):
         if not image_path:
-            self.setPixmap(None)
+            self.clear()
             self.is_paintable = False
             self.updateCursor()
         else:
             try:
-                image = QPixmap(image_path)
-                self.setPixmap(image)
-                self.resize(image.size())
+                self.img_ori = QPixmap(image_path)
+                self.reshow()
+                self.resize(self.img_show.size())
             except Exception as e:
-                self.setPixmap(None)
+                self.clear()
                 self.is_paintable = False
                 self.updateCursor()
+
+    def zoomIn(self):
+        self.zoom *= 1.1
+        self.reshow()
+
+    def zoomOut(self):
+        self.zoom /= 1.1
+        self.reshow()
+
+    def zoomReset(self):
+        self.zoom = 1.0
+        self.reshow()
+
+    def reshow(self):
+        self.img_show = self.img_ori.scaled(
+            self.img_ori.size() * self.zoom, Qt.AspectRatioMode.KeepAspectRatio
+        )
+        self.setPixmap(self.img_show)
+        self.resize(self.img_show.size())
 
     def setIsPaintable(self, value):
         self.is_paintable = value
