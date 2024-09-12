@@ -16,8 +16,10 @@ from PySide6.QtWidgets import (
     QSplitter,
 )
 from PySide6.QtCore import QSettings
+from PySide6.QtGui import QPixmap
 from AIMWR.painterLabel import PainterLabel
-from AIMWR.msgBox import FolderMsgBox
+from AIMWR.toolBox import ImageListBox, FolderInfoBox, TemplateBox
+from AIMWR.infoCollector import InfoCollector
 
 
 class AIMWRApp(QApplication):
@@ -85,11 +87,16 @@ class AIMWRApp(QApplication):
         self.lay_control.addWidget(self.btn_zoom_reset)
         self.lay_control.addWidget(self.btn_zoom_out)
 
-        # lay_right: msg_box + box_folder + spacer
-        self.box_folder = FolderMsgBox()
+        # lay_right: folder_info + template_tool + spacer
+        self.box_img_list = ImageListBox(self.wgt_all)
+        self.box_template = TemplateBox(self.wgt_all)
         self.spacer = QSpacerItem(20, 40, vData=QSizePolicy.Policy.Expanding)
-        self.lay_right.addWidget(self.box_folder)
+        self.lay_right.addWidget(self.box_img_list)
+        self.lay_right.addWidget(self.box_template)
         self.lay_right.addItem(self.spacer)
+
+        self.box_img_list.setVisible(False)
+        self.box_template.setVisible(False)
 
     def _initData(self):
         self.settings = QSettings("AIMWR", "AIMWR")
@@ -98,13 +105,13 @@ class AIMWRApp(QApplication):
 
         if not self.work_dir:
             self.chooseWorkspace()
+            return
         else:
             self.lin_workdir.setText(self.work_dir)
-            self.box_folder.setWorkDir(self.work_dir)
-            self.box_folder.update()
+            self.setInfoCollector(InfoCollector(self.work_dir))
 
         if self.image_name:
-            self.box_folder.setImage(self.image_name)
+            self.box_img_list.setImage(self.image_name)
             self.painter.atImageChanged(os.path.join(self.work_dir, self.image_name))
 
     def _initSignals(self):
@@ -113,7 +120,9 @@ class AIMWRApp(QApplication):
         self.btn_zoom_reset.clicked.connect(self.painter.zoomReset)
         self.btn_zoom_out.clicked.connect(self.painter.zoomOut)
 
-        self.box_folder.select_image.connect(self.select_image)
+        self.box_img_list.select_image.connect(self.select_image)
+        self.box_template.setup_template.connect(self.setup_template)
+        self.painter.get_template.connect(self.get_template)
 
     def chooseWorkspace(self):
         self.work_dir = QFileDialog.getExistingDirectory(
@@ -136,33 +145,48 @@ class AIMWRApp(QApplication):
                 return
 
         self.lin_workdir.setText(self.work_dir)
-        self.box_folder.setWorkDir(self.work_dir)
-        self.box_folder.update()
         self.settings.setValue("work_dir", self.work_dir)
         self.cleanImage()
+        self.setInfoCollector(InfoCollector(self.work_dir))
 
-        # TODO: renew message box
+    def setInfoCollector(self, info_c: InfoCollector):
+        self.info_c = info_c
+        self.box_img_list.setInfoCollector(info_c)
+        self.box_template.setInfoCollector(info_c)
+
+        self.box_img_list.setVisible(True)
+        self.box_template.setVisible(True)
 
     def select_image(self, image_name: str):
         self.image_name = image_name
         self.settings.setValue("image_name", self.image_name)
         self.painter.atImageChanged(os.path.join(self.work_dir, self.image_name))
 
-    # def chooseImage(self):
-    #     self.image_path, _ = QFileDialog.getOpenFileName(
-    #         self.wgt_all, "Choose image", self.work_dir, "Images (*.png *.jpg)"
-    #     )
-    #     if self.image_path:
-    #         self.image_dir, self.image_name = os.path.split(self.image_path)
-    #         if self.image_dir != self.work_dir:
-    #             self.warn("Image must be in the workspace")
-    #             return
-    #         self.lab_image.setText(self.image_name)
-    #         self.settings.setValue("image_name", self.image_name)
-    #         self.painter.atImageChanged(os.path.join(self.image_dir, self.image_name))
-    #     else:
-    #         self.warn("No image selected")
-    #     # TODO: renew message box
+    def setup_template(self):
+        self.painter.setDragState()
+        # disable other buttons
+        self.lay_right.setEnabled(False)
+
+    def get_template(self, pixmap: QPixmap):
+        # enable other buttons
+        self.lay_right.setEnabled(True)
+
+        if not self.image_name:
+            self.warn("No image selected")
+            return
+
+        result = QMessageBox.question(
+            self.wgt_all,
+            "Confirm",
+            "Are you sure to set this image as the template?",
+            QMessageBox.Yes | QMessageBox.No,
+        )
+        if result == QMessageBox.No:
+            return
+
+        # save template img
+        pixmap.save(self.info_c._P_TEMPLATE)
+        self.box_template.renew()
 
     def cleanImage(self):
         self.image_name = ""

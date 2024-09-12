@@ -5,6 +5,7 @@ import json
 
 class InfoCollector:
     def __init__(self, work_dir: str = ""):
+        self.work_dir = work_dir
         self._P_DIR = os.path.join(work_dir, "AIMWR")
         self._P_TEMPLATE = os.path.join(self._P_DIR, "template.jpg")
         self._P_METADATA = os.path.join(self._P_DIR, "metadata.json")
