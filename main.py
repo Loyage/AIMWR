@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QPixmap
 from AIMWR.painterLabel import PainterLabel
-from AIMWR.toolBox import ImageListBox, FolderInfoBox, TemplateBox
+from AIMWR.toolBox import ImageListBox, ExtractionBox, BasicSettingBox
 from AIMWR.infoCollector import InfoCollector
 
 
@@ -87,16 +87,17 @@ class AIMWRApp(QApplication):
         self.lay_control.addWidget(self.btn_zoom_reset)
         self.lay_control.addWidget(self.btn_zoom_out)
 
-        # lay_right: folder_info + template_tool + spacer
+        # lay_right: img_list + basic_setting + extraction + spacer
         self.box_img_list = ImageListBox(self.wgt_all)
-        self.box_template = TemplateBox(self.wgt_all)
+        self.box_setting = BasicSettingBox(self.wgt_all)
+        self.box_extraction = ExtractionBox(self.wgt_all)
         self.spacer = QSpacerItem(20, 40, vData=QSizePolicy.Policy.Expanding)
         self.lay_right.addWidget(self.box_img_list)
-        self.lay_right.addWidget(self.box_template)
+        self.lay_right.addWidget(self.box_setting)
         self.lay_right.addItem(self.spacer)
 
         self.box_img_list.setVisible(False)
-        self.box_template.setVisible(False)
+        self.box_setting.setVisible(False)
 
     def _initData(self):
         self.settings = QSettings("AIMWR", "AIMWR")
@@ -121,7 +122,8 @@ class AIMWRApp(QApplication):
         self.btn_zoom_out.clicked.connect(self.painter.zoomOut)
 
         self.box_img_list.select_image.connect(self.select_image)
-        self.box_template.setup_template.connect(self.setup_template)
+        self.box_setting.setup_template.connect(self.setup_template)
+
         self.painter.get_template.connect(self.get_template)
 
     def chooseWorkspace(self):
@@ -152,10 +154,10 @@ class AIMWRApp(QApplication):
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
         self.box_img_list.setInfoCollector(info_c)
-        self.box_template.setInfoCollector(info_c)
+        self.box_setting.setInfoCollector(info_c)
 
         self.box_img_list.setVisible(True)
-        self.box_template.setVisible(True)
+        self.box_setting.setVisible(True)
 
     def select_image(self, image_name: str):
         self.image_name = image_name
@@ -186,7 +188,7 @@ class AIMWRApp(QApplication):
 
         # save template img
         pixmap.save(self.info_c._P_TEMPLATE)
-        self.box_template.renew()
+        self.box_setting.renew()
 
     def cleanImage(self):
         self.image_name = ""

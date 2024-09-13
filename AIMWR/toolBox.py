@@ -1,6 +1,7 @@
 import os
 from ._collapsible import QCollapsible
 from .infoCollector import InfoCollector
+from .algorithm import Extractor
 from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -9,12 +10,40 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QListView,
+    QTextEdit,
+    QMessageBox,
+    QButtonGroup,
+    QRadioButton,
 )
 from PySide6.QtCore import QStringListModel, Signal
 from PySide6.QtGui import QPixmap
 
 
-# ImageList + BasicSettings(class setting) + CountBox + Template + Extraction + Classification + TrainTool
+# CountBox(folder, image) + ImageList + BasicSettings(class setting, template setting) + Extraction + Classification + EditTool(set showing color) + TrainTool
+class CountBox(QCollapsible):
+    def __init__(self, parent: QWidget | None = None):
+        """
+        A collapsible widget to show the count result.
+        """
+
+        super(CountBox, self).__init__(
+            "Count", parent, expandedIcon="▼", collapsedIcon="▶"
+        )
+        self._initUI()
+        self._initData()
+        self._initSignals()
+
+    def _initUI(self):
+        self.widget = QWidget()
+        self.setContent(self.widget)
+        self.lay_all = QVBoxLayout()
+        self.widget.setLayout(self.lay_all)
+        self.collapse()
+
+        self.box_image = QGroupBox("Image")
+        self.box_class = QGroupBox
+
+
 class ImageListBox(QCollapsible):
     select_image = Signal(str, name="select_image")
 
@@ -113,15 +142,16 @@ class ImageListBox(QCollapsible):
         self.select_image.emit(image_name)
 
 
-class SettingBox(QCollapsible):
-    # TODO: 选择显示类别，有全选和全不选按钮
+class BasicSettingBox(QCollapsible):
+    setup_template = Signal(name="setup_template")
+
     def __init__(self, parent: QWidget | None = None):
         """
         A collapsible widget to show basic settings for classification.
         """
 
-        super(SettingBox, self).__init__(
-            "Class Settings", parent, expandedIcon="▼", collapsedIcon="▶"
+        super(BasicSettingBox, self).__init__(
+            "Basic Settings", parent, expandedIcon="▼", collapsedIcon="▶"
         )
         self._initUI()
         self._initData()
@@ -134,33 +164,135 @@ class SettingBox(QCollapsible):
         self.widget.setLayout(self.lay_all)
         self.collapse()
 
-        self.box_class = QGroupBox("Class")
-        self.lay_class = QVBoxLayout()
-        self.box_class.setLayout(self.lay_class)
+        self.text_class = QTextEdit()
+        self.btn_class = QPushButton("Reset")
 
-        self.box_color = QGroupBox("Color")
-        self.lay_color = QVBoxLayout()
-        self.box_color.setLayout(self.lay_color)
+        self.lbl_temp_msg = QLabel()
+        self.lbl_temp_img = QLabel()
+        self.btn_temp = QPushButton("Setup template")
 
-        self.lay_all.addWidget(self.box_class)
-        self.lay_all.addWidget(self.box_color)
+        self.lay_all.addWidget(self.text_class)
+        self.lay_all.addWidget(self.btn_class)
+        self.lay_all.addWidget(self.lbl_temp_msg)
+        self.lay_all.addWidget(self.lbl_temp_img)
+        self.lay_all.addWidget(self.btn_temp)
 
     def _initData(self):
+        self.is_resetting_class = False
         self.classes = []
         self.colors = []
 
+        self.has_template = False
+        self.template_path = ""
+
+        self.text_class.setReadOnly(not self.is_resetting_class)
+        self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
+        self.lbl_temp_img.setVisible(self.has_template)
+        self.btn_temp.setText(
+            "Change template" if self.has_template else "Setup template"
+        )
+
     def _initSignals(self):
-        pass
+        self.btn_temp.clicked.connect(self.setup_template.emit)
+        self.btn_class.clicked.connect(self.resetClass)
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
         self.renew()
 
+    def resetClass(self):
+        self.is_resetting_class = not self.is_resetting_class
+        self.renew()
+
+        text = self.text_class.toPlainText()
+        class_names = text.split("\n")
+        self.info_c.resetClass(class_names)
+
     def renew(self):
-        self.classes = self.info_c.metadata["classes"]
-        self.colors = self.info_c.metadata["colors"]
-        self.lay_class.addWidget(QLabel(f"Classes: {self.classes}"))
-        self.lay_color.addWidget(QLabel(f"Colors: {self.colors}"))
+        self.has_template = self.info_c.hasTemplate()
+        self.lbl_temp_img.setVisible(self.has_template)
+        self.text_class.setReadOnly(not self.is_resetting_class)
+        self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
+        self.btn_temp.setText(
+            "Change template" if self.has_template else "Setup template"
+        )
+        if self.has_template:
+            self.path = self.info_c._P_TEMPLATE
+            self.img = QPixmap(self.path)
+            self.lbl_temp_img.setPixmap(self.img)
+            self.lbl_temp_img.resize(self.lbl_temp_img.pixmap().size())
+            self.expand()
+            self.img_size = self.lbl_temp_img.pixmap().size()
+            self.lbl_temp_msg.setText(
+                f"Template image: {self.img_size.width()}x{self.img_size.height()}"
+            )
+        else:
+            self.lbl_temp_msg.setText("No template image found.")
+        self.expand()
+
+
+class ExtractionBox(QCollapsible):
+    def __init__(self, parent: QWidget | None = None):
+        """
+        A collapsible widget to show tools for image extraction.
+        """
+
+        super(ExtractionBox, self).__init__(
+            "Extraction", parent, expandedIcon="▼", collapsedIcon="▶"
+        )
+        self.parent = parent
+        self._initUI()
+        self._initData()
+        self._initSignals()
+
+    def _initUI(self):
+        self.widget = QWidget()
+        self.setContent(self.widget)
+        self.lay_all = QVBoxLayout()
+        self.widget.setLayout(self.lay_all)
+        self.collapse()
+
+        self.group = QButtonGroup()
+        self.btn_single = QRadioButton("Single image")
+        self.btn_all = QRadioButton("Whole folder")
+        self.group.addButton(self.btn_single)
+        self.group.addButton(self.btn_all)
+
+        self.btn_extract = QPushButton("Extract")
+
+    def _initData(self):
+        self.extractor = None
+        pass
+
+    def _initSignals(self):
+        self.btn_extract.clicked.connect(self.extract)
+
+    def setInfoCollector(self, info_c: InfoCollector):
+        self.info_c = info_c
+        self.extractor = Extractor(self.info_c.work_dir, self.info_c._P_TEMPLATE)
+
+    def extract(self):
+        if not self.info_c.hasTemplate():
+            QMessageBox.warning(
+                self.wgt_all, "Warning", "No template image found.", QMessageBox.Ok
+            )
+            return
+
+        if self.btn_single.isChecked():
+            img_names = [self.parent.image_name]
+            wells_locs = [self.extractor.wellExtract(self.parent.image_name)]
+        elif self.btn_all.isChecked():
+            img_names = self.parent.img_list.stringList()
+            wells_locs = []
+            for img_name in img_names:
+                wells_locs.append(self.extractor.wellExtract(img_name))
+        else:
+            return
+
+        self.writeResult(img_names, wells_locs)
+
+    def writeResult(self, img_names: list, wells_locs: list):
+        pass
 
 
 class FolderInfoBox(QCollapsible):
@@ -313,70 +445,6 @@ class ImageInfoBox(QCollapsible):
 
     def renew(self):
         pass
-
-
-class TemplateBox(QCollapsible):
-    setup_template = Signal(name="setup_template")
-
-    def __init__(self, parent: QWidget | None = None):
-        """
-        A collapsible widget to show messages about the template image.
-        """
-
-        super(TemplateBox, self).__init__(
-            "Template", parent, expandedIcon="▼", collapsedIcon="▶"
-        )
-        self._initUI()
-        self._initData()
-        self._initSignals()
-
-    def _initUI(self):
-        self.widget = QWidget()
-        self.setContent(self.widget)
-        self.lay_all = QVBoxLayout()
-        self.widget.setLayout(self.lay_all)
-        self.collapse()
-
-        self.lbl_text = QLabel()
-        self.lbl_img = QLabel()
-        self.btn = QPushButton("Setup template")
-        self.lay_all.addWidget(self.lbl_text)
-        self.lay_all.addWidget(self.lbl_img)
-        self.lay_all.addWidget(self.btn)
-
-    def _initData(self):
-        self.has_template = False
-        self.template_path = ""
-
-        self.lbl_img.setVisible(self.has_template)
-        self.btn_text = "Change template" if self.has_template else "Setup template"
-        self.btn.setText(self.btn_text)
-
-    def _initSignals(self):
-        self.btn.clicked.connect(self.setup_template.emit)
-
-    def setInfoCollector(self, info_c: InfoCollector):
-        self.info_c = info_c
-        self.renew()
-
-    def renew(self):
-        self.has_template = self.info_c.hasTemplate()
-        self.lbl_img.setVisible(self.has_template)
-        self.btn_text = "Change template" if self.has_template else "Setup template"
-        self.btn.setText(self.btn_text)
-        if self.has_template:
-            self.path = self.info_c._P_TEMPLATE
-            self.img = QPixmap(self.path)
-            self.lbl_img.setPixmap(self.img)
-            self.lbl_img.resize(self.lbl_img.pixmap().size())
-            self.expand()
-            self.img_size = self.lbl_img.pixmap().size()
-            self.lbl_text.setText(
-                f"Template image: {self.img_size.width()}x{self.img_size.height()}"
-            )
-        else:
-            self.lbl_text.setText("No template image found.")
-        self.expand()
 
 
 # TODO: folder_tool_box: extract, classify
