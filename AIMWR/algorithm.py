@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 import torch
 from torchvision import transforms
 from PySide6.QtCore import QThread, Signal
@@ -164,7 +165,14 @@ class TrainThread(QThread):
         dataset = WellDataset(well_imgs, class_idxs)
         return dataset
 
+    def saveModel(self, model):
+        model_path = self.info_c.P_MODEL.format(
+            model_type=self.model_type, time=self.time_str
+        )
+        torch.save(model, model_path)
+
     def run(self):
+        self.time_str = time.strftime("%Y%m%d%H%M%S", time.localtime())
         if not self.model_path:
             class_num = len(self.info_c.class_names)
             if self.model_type == "MobileNet":
@@ -186,6 +194,7 @@ class TrainThread(QThread):
         dataloader = torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True
         )
+        min_loss = 0.0
         for epoch in range(self.max_epoch):
             for i, (inputs, labels) in enumerate(dataloader):
                 if self.is_stop:
@@ -198,6 +207,10 @@ class TrainThread(QThread):
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
+
+                if loss.item() < min_loss:
+                    min_loss = loss.item()
+                    self.saveModel(model)
 
                 if i % 10 == 0:
                     self.complete.emit(epoch + 1, i + 1, loss.item())

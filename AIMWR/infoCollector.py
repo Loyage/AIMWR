@@ -13,6 +13,7 @@ class InfoCollector:
         self.P_EXTARCT = os.path.join(self.P_DIR, "extraction/{img_name}.txt")
         self.P_CLASSIFY = os.path.join(self.P_DIR, "classification/{img_name}.txt")
         self.P_EDIT = os.path.join(self.P_DIR, "edit/{img_name}.txt")
+        self.P_MODEL = os.path.join(self.P_DIR, "model/{model_type}_{time}.pth")
 
         self.class_names: list[str] = []
         self.img_name_current: str = ""
@@ -38,6 +39,9 @@ class InfoCollector:
 
         if not os.path.exists(os.path.join(self.P_DIR, "edit")):
             os.makedirs(os.path.join(self.P_DIR, "edit"))
+
+        if not os.path.exists(os.path.join(self.P_DIR, "model")):
+            os.makedirs(os.path.join(self.P_DIR, "model"))
 
     def _loadClass(self):
         with open(self.P_CLASS, "r") as f:

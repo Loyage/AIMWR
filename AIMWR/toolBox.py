@@ -775,7 +775,6 @@ class EditToolBox(QCollapsible):
             self.finish_edit.emit()
 
 
-# TODO: TrainToolBox: choose model, parameters(model type, can choose if no pretrained), train, bar, result
 class TrainToolBox(QCollapsible):
     def __init__(self, parent: QWidget | None = None):
         """
@@ -817,15 +816,12 @@ class TrainToolBox(QCollapsible):
         self.lay_params.addWidget(self.comb_model)
 
         self.lbl_epoch = QLabel("Max epochs:")
-        self.lay_params.addWidget(self.lbl_epoch)
-
         self.line_epoch = QLineEdit()
-        self.lay_params.addWidget(self.line_epoch)
-
         self.lbl_batch = QLabel("Batch size:")
-        self.lay_params.addWidget(self.lbl_batch)
-
         self.line_batch = QLineEdit()
+        self.lay_params.addWidget(self.lbl_epoch)
+        self.lay_params.addWidget(self.line_epoch)
+        self.lay_params.addWidget(self.lbl_batch)
         self.lay_params.addWidget(self.line_batch)
 
     def _initData(self):
@@ -888,5 +884,36 @@ class TrainToolBox(QCollapsible):
         self.ai.thread.complete.connect(self.info_c.updateBar)
         self.ai.thread.start()
 
+    def finishTrain(self):
+        QMessageBox.information(
+            self.wgt_all, "Info", "Training finished.", QMessageBox.Ok
+        )
+        self.lbl_result.setText("Training finished. Model saved.")
+        self.bar_train.setValue(0)
+
+    def updateBar(self, epoch, idx, loss):
+        self.bar_train.setValue(epoch / self.max_epoch * 100)
+        self.lbl_result.setText(f"Epoch: {epoch}, Loss: {loss:.3f}")
+
 
 # TODO: TestToolBox: choose model, test, save, result
+# 直接对Edit后的结果进行Classify对比
+class TestToolBox(QCollapsible):
+    def __init__(self, parent: QWidget | None = None):
+        """
+        A collapsible widget to show tools for model testing.
+        """
+
+        super(TestToolBox, self).__init__(
+            "Test Tool", parent, expandedIcon="▼", collapsedIcon="▶"
+        )
+        self._initUI()
+        self._initData()
+        self._initSignals()
+
+    def _initUI(self):
+        self.widget = QWidget()
+        self.setContent(self.widget)
+        self.lay_all = QVBoxLayout()
+        self.widget.setLayout(self.lay_all)
+        self.collapse()
