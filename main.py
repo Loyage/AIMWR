@@ -15,11 +15,20 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSplitter,
 )
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QPixmap
 from AIMWR.painterLabel import PainterLabel
-from AIMWR.toolBox import ImageListBox, ExtractionBox, BasicSettingBox
+from AIMWR.toolBox import (
+    ImageListBox,
+    BasicSettingBox,
+    CountBox,
+    ExtractionBox,
+    ClassificationBox,
+    EditToolBox,
+    TrainToolBox,
+)
 from AIMWR.infoCollector import InfoCollector
+from AIMWR.algorithm import AiContainer
 
 
 class AIMWRApp(QApplication):
@@ -29,7 +38,6 @@ class AIMWRApp(QApplication):
 
         self.wgt_all = QWidget()
         self.wgt_all.setWindowTitle("AIMWR")
-        self.wgt_all.showMaximized()
 
         self._initUI()
         self._initData()
@@ -51,8 +59,11 @@ class AIMWRApp(QApplication):
 
         self.lay_left = QVBoxLayout()
         self.wgt_left.setLayout(self.lay_left)
+        self.wgt_right = QWidget()
         self.lay_right = QVBoxLayout()
-        self.scr_right.setLayout(self.lay_right)
+        self.scr_right.setWidget(self.wgt_right)
+        self.wgt_right.setLayout(self.lay_right)
+        self.scr_right.setWidgetResizable(True)
 
         # wgt_left: work_dir + painter + control
         self.lay_work_dir = QHBoxLayout()
@@ -90,30 +101,51 @@ class AIMWRApp(QApplication):
         # lay_right: img_list + basic_setting + extraction + spacer
         self.box_img_list = ImageListBox(self.wgt_all)
         self.box_setting = BasicSettingBox(self.wgt_all)
+        self.box_count = CountBox(self.wgt_all)
         self.box_extraction = ExtractionBox(self.wgt_all)
+        self.box_classification = ClassificationBox(self.wgt_all)
+        self.box_edit = EditToolBox(self.wgt_all)
+        self.box_train = TrainToolBox(self.wgt_all)
         self.spacer = QSpacerItem(20, 40, vData=QSizePolicy.Policy.Expanding)
         self.lay_right.addWidget(self.box_img_list)
         self.lay_right.addWidget(self.box_setting)
+        self.lay_right.addWidget(self.box_count)
+        self.lay_right.addWidget(self.box_extraction)
+        self.lay_right.addWidget(self.box_classification)
+        self.lay_right.addWidget(self.box_edit)
+        self.lay_right.addWidget(self.box_train)
         self.lay_right.addItem(self.spacer)
 
         self.box_img_list.setVisible(False)
         self.box_setting.setVisible(False)
+        self.box_count.setVisible(False)
+        self.box_extraction.setVisible(False)
+        self.box_classification.setVisible(False)
+        self.box_edit.setVisible(False)
+        self.box_train.setVisible(False)
+
+        # show maximized
+        self.wgt_all.showMaximized()
 
     def _initData(self):
         self.settings = QSettings("AIMWR", "AIMWR")
         self.work_dir = self.settings.value("work_dir", "")
         self.image_name = self.settings.value("image_name", "")
+        self.ai = AiContainer()
+
+        self.setupAiContainer()
 
         if not self.work_dir:
             self.chooseWorkspace()
             return
         else:
             self.lin_workdir.setText(self.work_dir)
-            self.setInfoCollector(InfoCollector(self.work_dir))
+            self.setupInfoCollector(InfoCollector(self.work_dir))
 
         if self.image_name:
             self.box_img_list.setImage(self.image_name)
-            self.painter.atImageChanged(os.path.join(self.work_dir, self.image_name))
+            self.info_c.img_name_current = self.image_name
+            self.painter.atImageChanged()
 
     def _initSignals(self):
         self.btn_workdir.clicked.connect(self.chooseWorkspace)
@@ -122,9 +154,14 @@ class AIMWRApp(QApplication):
         self.btn_zoom_out.clicked.connect(self.painter.zoomOut)
 
         self.box_img_list.select_image.connect(self.select_image)
-        self.box_setting.setup_template.connect(self.setup_template)
+        self.box_setting.start_template_setting.connect(self.start_template_setting)
+        self.box_extraction.finish_extraction.connect(self.finish_extraction)
+        self.box_edit.change_source.connect(self.painter.resetRectList)
+        self.box_edit.start_edit.connect(self.start_edit)
+        self.box_edit.finish_edit.connect(self.finish_edit)
+        self.box_edit.classes_rechoose.connect(self.classes_rechoose)
 
-        self.painter.get_template.connect(self.get_template)
+        self.painter.finish_template_setting.connect(self.finish_template_setting)
 
     def chooseWorkspace(self):
         self.work_dir = QFileDialog.getExistingDirectory(
@@ -149,27 +186,46 @@ class AIMWRApp(QApplication):
         self.lin_workdir.setText(self.work_dir)
         self.settings.setValue("work_dir", self.work_dir)
         self.cleanImage()
-        self.setInfoCollector(InfoCollector(self.work_dir))
+        self.setupInfoCollector(InfoCollector(self.work_dir))
 
-    def setInfoCollector(self, info_c: InfoCollector):
+    def setupInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
+        self.info_c.img_name_current = self.image_name
+
         self.box_img_list.setInfoCollector(info_c)
         self.box_setting.setInfoCollector(info_c)
+        self.box_count.setInfoCollector(info_c)
+        self.box_extraction.setInfoCollector(info_c)
+        self.box_classification.setInfoCollector(info_c)
+        self.box_edit.setInfoCollector(info_c)
+        self.box_train.setInfoCollector(info_c)
+        self.painter.setInfoCollector(info_c)
 
         self.box_img_list.setVisible(True)
         self.box_setting.setVisible(True)
+        self.box_count.setVisible(True)
+        self.box_extraction.setVisible(True)
+        self.box_classification.setVisible(True)
+        self.box_train.setVisible(True)
+        self.box_edit.setVisible(True)
+
+    def setupAiContainer(self):
+        self.box_classification.setAiContainer(self.ai)
+        self.box_train.setAiContainer(self.ai)
 
     def select_image(self, image_name: str):
         self.image_name = image_name
+        self.info_c.img_name_current = image_name
         self.settings.setValue("image_name", self.image_name)
-        self.painter.atImageChanged(os.path.join(self.work_dir, self.image_name))
+        self.painter.atImageChanged()
 
-    def setup_template(self):
+    def start_template_setting(self):
         self.painter.setDragState()
         # disable other buttons
         self.lay_right.setEnabled(False)
 
-    def get_template(self, pixmap: QPixmap):
+    def finish_template_setting(self, pixmap: QPixmap):
+        self.painter.setNormalState()
         # enable other buttons
         self.lay_right.setEnabled(True)
 
@@ -187,13 +243,35 @@ class AIMWRApp(QApplication):
             return
 
         # save template img
-        pixmap.save(self.info_c._P_TEMPLATE)
+        pixmap.save(self.info_c.P_TEMPLATE)
         self.box_setting.renew()
+
+    def finish_extraction(self):
+        self.painter.resetRectList()
+        self.renew()
+
+    def start_edit(self):
+        self.painter.setEditState()
+
+    def finish_edit(self):
+        self.painter.setNormalState()
+        self.painter.atEditFinish()
+        self.renew()
+
+    def classes_rechoose(self):
+        self.painter.resetRectList()
 
     def cleanImage(self):
         self.image_name = ""
         self.settings.setValue("image_name", "")
-        self.painter.atImageChanged("")
+        self.info_c.img_name_current = None
+        self.painter.atImageChanged()
+
+    def renew(self):
+        self.box_img_list.renew()
+        self.box_setting.renew()
+        self.box_classification.renew()
+        self.painter.atImageChanged()
 
     def warn(self, msg):
         QMessageBox.warning(self.wgt_all, "Warning", msg, QMessageBox.Ok)

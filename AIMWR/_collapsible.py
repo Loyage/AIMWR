@@ -91,8 +91,8 @@ class QCollapsible(QFrame):
         # default content widget
         _content = QWidget()
         _content.setLayout(QVBoxLayout())
-        _content.setMaximumHeight(0)
-        _content.layout().setContentsMargins(QMargins(5, 0, 0, 0))
+        # _content.setMaximumHeight(0)
+        _content.layout().setContentsMargins(QMargins(0, 0, 0, 0))
         self.setContent(_content)
 
     def toggleButton(self) -> QPushButton:
