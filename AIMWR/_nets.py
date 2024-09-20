@@ -51,6 +51,7 @@ class WellDataset(Dataset):
 
         self.transforms = transforms.Compose(
             [
+                # transforms.Grayscale(num_output_channels=1),
                 transforms.ToTensor(),
                 transforms.Resize([32, 32]),
                 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
@@ -62,7 +63,8 @@ class WellDataset(Dataset):
         )
 
     def __len__(self):
-        return len(self.wells_tensor)
+        print("len(self.class_idxs):", len(self.class_idxs))
+        return len(self.class_idxs)
 
     def __getitem__(self, idx):
         img = self.well_imgs[idx] / 255.0

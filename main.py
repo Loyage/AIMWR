@@ -264,7 +264,8 @@ class AIMWRApp(QApplication):
     def cleanImage(self):
         self.image_name = ""
         self.settings.setValue("image_name", "")
-        self.info_c.img_name_current = None
+        if self.info_c:
+            self.info_c.img_name_current = None
         self.painter.atImageChanged()
 
     def renew(self):

@@ -280,6 +280,8 @@ class BasicSettingBox(QCollapsible):
 
     def resetClass(self):
         self.is_resetting_class = not self.is_resetting_class
+        self.text_class.setReadOnly(not self.is_resetting_class)
+        self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
         if self.is_resetting_class:
             return
         text = self.text_class.toPlainText()
@@ -418,7 +420,7 @@ class ExtractionBox(QCollapsible):
     def extract(self):
         if not self.info_c.hasTemplate():
             QMessageBox.warning(
-                self.wgt_all, "Warning", "No template image found.", QMessageBox.Ok
+                self.widget, "Warning", "No template image found.", QMessageBox.Ok
             )
             return
 
@@ -426,7 +428,7 @@ class ExtractionBox(QCollapsible):
             img_names = [self.info_c.img_name_current]
         elif self.rad_unproc.isChecked():
             img_names = self.info_c.getImageNamesByFilter(
-                [False], [True, False], [True, False]
+                ([False], [True, False], [True, False])
             )
         elif self.rad_all.isChecked():
             img_names = self.info_c.getImageNames()
@@ -440,7 +442,7 @@ class ExtractionBox(QCollapsible):
 
         if len(img_names) > 1:
             QMessageBox.information(
-                self.wgt_all,
+                self.widget,
                 "Info",
                 f"Extraction finished. {len(img_names)} images processed.",
                 QMessageBox.Ok,
@@ -560,9 +562,9 @@ class ClassificationBox(QCollapsible):
 
     def classify(self):
         model_path = self.box_model.line_path.text()
-        if self.ai.thread.isRunning():
+        if self.ai.thread and self.ai.thread.isRunning():
             QMessageBox.warning(
-                self.wgt_all,
+                self.widget,
                 "Warning",
                 "Classification or training is running.",
                 QMessageBox.Ok,
@@ -571,13 +573,13 @@ class ClassificationBox(QCollapsible):
 
         if not self.box_model.line_path.text():
             QMessageBox.warning(
-                self.wgt_all, "Warning", "No model loaded.", QMessageBox.Ok
+                self.widget, "Warning", "No model loaded.", QMessageBox.Ok
             )
             return
 
         if not os.path.exists(model_path):
             QMessageBox.warning(
-                self.wgt_all, "Warning", "Model file not found.", QMessageBox.Ok
+                self.widget, "Warning", "Model file not found.", QMessageBox.Ok
             )
             return
 
@@ -585,25 +587,25 @@ class ClassificationBox(QCollapsible):
             img_names = [self.info_c.img_name_current]
         elif self.rad_unproc.isChecked():
             img_names = self.info_c.getImageNamesByFilter(
-                [True], [False], [True, False]
+                ([True], [False], [True, False])
             )  # get unclassified images
         elif self.rad_all.isChecked():
             img_names = self.info_c.getImageNamesByFilter(
-                [True], [True, False], [True, False]
+                ([True], [True, False], [True, False])
             )
         else:
             return
 
         if not img_names:
             QMessageBox.warning(
-                self.wgt_all, "Warning", "No images to classify.", QMessageBox.Ok
+                self.widget, "Warning", "No images to classify.", QMessageBox.Ok
             )
             return
 
         self.ai.thread = ClassifyThread(self.info_c, model_path, img_names, self.parent)
         if self.ai.thread.isUsingCpu():
             res = QMessageBox.question(
-                self.wgt_all,
+                self.widget,
                 "Warning",
                 "CPU is used for classification. Continue?",
                 QMessageBox.Yes | QMessageBox.No,
@@ -623,7 +625,7 @@ class ClassificationBox(QCollapsible):
 
     def finishClassify(self):
         QMessageBox.information(
-            self.wgt_all, "Info", "Classification finished.", QMessageBox.Ok
+            self.widget, "Info", "Classification finished.", QMessageBox.Ok
         )
         self.bar_classify.setValue(0)
         self.bar_classify.setVisible(False)
@@ -706,13 +708,16 @@ class EditToolBox(QCollapsible):
 
         # renew comb_source
         self.comb_source.clear()
-        self.comb_source.addItem("[No source]")
-        if self.info_c.hasExtracted(self.info_c.img_name_current):
-            self.comb_source.addItem("Extraction")
-        if self.info_c.hasClassified(self.info_c.img_name_current):
-            self.comb_source.addItem("Classification")
-        if self.info_c.hasEdit(self.info_c.img_name_current):
-            self.comb_source.addItem("Edit")
+        # self.comb_source.addItem("[No source]")
+        # if self.info_c.hasExtracted(self.info_c.img_name_current):
+        #     self.comb_source.addItem("Extraction")
+        # if self.info_c.hasClassified(self.info_c.img_name_current):
+        #     self.comb_source.addItem("Classification")
+        # if self.info_c.hasEdit(self.info_c.img_name_current):
+        #     self.comb_source.addItem("Edit")
+        self.comb_source.addItems(
+            ["[No source]", "Extraction", "Classification", "Edit"]
+        )
 
         # renew box_filter
         self.ckb_classes = []
@@ -784,6 +789,7 @@ class TrainToolBox(QCollapsible):
         super(TrainToolBox, self).__init__(
             "Train Tool", parent, expandedIcon="▼", collapsedIcon="▶"
         )
+        self.parent = parent
         self._initUI()
         self._initData()
         self._initSignals()
@@ -851,9 +857,9 @@ class TrainToolBox(QCollapsible):
 
     def train(self):
         model_path = self.box_model.line_path.text()
-        if self.ai.thread.isRunning():
+        if self.ai.thread and self.ai.thread.isRunning():
             QMessageBox.warning(
-                self.wgt_all,
+                self.widget,
                 "Warning",
                 "Classification or training is running.",
                 QMessageBox.Ok,
@@ -872,7 +878,7 @@ class TrainToolBox(QCollapsible):
         )
         if self.ai.thread.isUsingCpu():
             res = QMessageBox.question(
-                self.wgt_all,
+                self.widget,
                 "Warning",
                 "CPU is used for classification. Continue?",
                 QMessageBox.Yes | QMessageBox.No,
@@ -881,12 +887,12 @@ class TrainToolBox(QCollapsible):
                 return
 
         self.ai.thread.finished.connect(self.finishTrain)
-        self.ai.thread.complete.connect(self.info_c.updateBar)
+        self.ai.thread.complete.connect(self.updateBar)
         self.ai.thread.start()
 
     def finishTrain(self):
         QMessageBox.information(
-            self.wgt_all, "Info", "Training finished.", QMessageBox.Ok
+            self.widget, "Info", "Training finished.", QMessageBox.Ok
         )
         self.lbl_result.setText("Training finished. Model saved.")
         self.bar_train.setValue(0)

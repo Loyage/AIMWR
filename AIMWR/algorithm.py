@@ -2,6 +2,7 @@ import os
 import cv2
 import time
 import torch
+import numpy as np
 from torchvision import transforms
 from PySide6.QtCore import QThread, Signal
 
@@ -11,13 +12,17 @@ from ._nets import MobileNet, Resnet18, Resnet50, WellDataset
 class Extractor:
     def __init__(self, dir, template_path):
         self.dir = dir
-        self.t = cv2.imread(template_path, cv2.IMREAD_GRAYSCALE)
+        self.t = cv2.imdecode(
+            np.fromfile(template_path, dtype=np.uint8), cv2.IMREAD_GRAYSCALE
+        )
 
     def wellExtract(self, img_name: str):
         match_thre = 0.15
 
         img_path = os.path.join(self.dir, img_name)
-        src_color = cv2.imread(img_path)
+        src_color = cv2.imdecode(
+            np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_COLOR
+        )
         src_gray = cv2.cvtColor(src_color, cv2.COLOR_BGR2GRAY)
 
         img_binary = cv2.adaptiveThreshold(
@@ -87,7 +92,7 @@ class ClassifyThread(QThread):
             if self.is_stop:
                 break
             img_path = self.info_c.P_IMAGE.format(img_name=img_name)
-            img = cv2.imread(img_path)
+            img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_COLOR)
 
             wells_loc = []
             extract_path = self.info_c.P_EXTARCT.format(img_name=img_name)
@@ -148,16 +153,18 @@ class TrainThread(QThread):
         img_names_edit = self.info_c.getImageNamesByFilter(
             _filter=([True, False], [True, False], [True])
         )
+        if len(img_names_edit) == 0:
+            raise ValueError("No image for training")  # TODO: add a warning dialog
         well_imgs = []
         class_idxs = []
         for img_name in img_names_edit:
             img_path = self.info_c.P_IMAGE.format(img_name=img_name)
-            img = cv2.imread(img_path)
+            img = cv2.imdecode(np.fromfile(img_path, dtype=np.uint8), cv2.IMREAD_COLOR)
             edit_path = self.info_c.P_EDIT.format(img_name=img_name)
             with open(edit_path, "r") as f:
                 lines = f.readlines()
                 for line in lines:
-                    x, y, w, h, label = map(int, line.split())
+                    x, y, w, h, label = map(int, line.split(","))
                     well_img = img[y : y + h, x : x + w]
                     well_imgs.append(well_img)
                     class_idxs.append(label)
@@ -204,6 +211,7 @@ class TrainThread(QThread):
 
                 optimizer.zero_grad()
                 outputs = model(inputs)
+                print(outputs.shape, labels.shape)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()

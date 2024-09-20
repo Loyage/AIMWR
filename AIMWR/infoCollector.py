@@ -43,6 +43,10 @@ class InfoCollector:
         if not os.path.exists(os.path.join(self.P_DIR, "model")):
             os.makedirs(os.path.join(self.P_DIR, "model"))
 
+        if not os.path.exists(self.P_CLASS):
+            with open(self.P_CLASS, "w") as f:
+                f.write("")
+
     def _loadClass(self):
         with open(self.P_CLASS, "r") as f:
             class_names = f.readlines()
@@ -107,6 +111,8 @@ class InfoCollector:
         return self._getResults(img_name, self.P_EDIT)
 
     def _getResults(self, img_name: str, path: str):
+        if not os.path.exists(path.format(img_name=img_name)):
+            return []
         with open(path.format(img_name=img_name), "r") as f:
             lines = f.readlines()
         lines = [line.strip() for line in lines]
