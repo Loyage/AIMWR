@@ -12,7 +12,9 @@ from ._nets import MobileNet, Resnet18, Resnet50, WellDataset
 class Extractor:
     def __init__(self, dir, template_path):
         self.dir = dir
-        self.t = cv2.imdecode(
+        self.t = None
+        if os.path.exists(template_path):
+            self.t = cv2.imdecode(
             np.fromfile(template_path, dtype=np.uint8), cv2.IMREAD_GRAYSCALE
         )
 
