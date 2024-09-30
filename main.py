@@ -127,6 +127,7 @@ class AIMWRApp(QApplication):
         self.wgt_all.showMaximized()
 
     def _initData(self):
+        self.info_c = None
         self.settings = QSettings("AIMWR", "AIMWR")
         self.work_dir = self.settings.value("work_dir", "")
         self.image_name = self.settings.value("image_name", "")
