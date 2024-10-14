@@ -136,16 +136,28 @@ class AIMWRApp(QApplication):
         self.setupAiContainer()
 
         if not self.work_dir:
-            self.chooseWorkspace()
             return
+        elif not os.path.exists(self.work_dir):
+            self.warn("Workspace not exists")
+            self.work_dir = ""
+            self.settings.setValue("work_dir", "")
         else:
             self.lin_workdir.setText(self.work_dir)
             self.setupInfoCollector(InfoCollector(self.work_dir))
 
-        if self.image_name:
+        is_image_name_exist = os.path.exists(
+            os.path.join(self.work_dir, self.image_name)
+        )
+        if not is_image_name_exist:
+            self.warn("Image not exists")
+            self.image_name = ""
+            self.settings.setValue("image_name", "")
+        elif self.image_name:
             self.box_img_list.setImage(self.image_name)
             self.info_c.img_name_current = self.image_name
             self.painter.atImageChanged()
+        else:
+            self.box_img_list.renew()
 
     def _initSignals(self):
         self.btn_workdir.clicked.connect(self.chooseWorkspace)
@@ -187,6 +199,7 @@ class AIMWRApp(QApplication):
         self.settings.setValue("work_dir", self.work_dir)
         self.cleanImage()
         self.setupInfoCollector(InfoCollector(self.work_dir))
+        self.box_img_list.renew()
 
     def setupInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c

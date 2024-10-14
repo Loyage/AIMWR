@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QProgressBar,
 )
-from PySide6.QtCore import QStringListModel, Signal
+from PySide6.QtCore import QStringListModel, Signal, QAbstractItemModel
 from PySide6.QtGui import QPixmap
 from ._colors import COLORS
 
@@ -211,7 +211,7 @@ class ImageListBox(QCollapsible):
             self.select_image.emit(self.info_c.img_name_current)
 
     def setImage(self, image_name: str):
-        # fixme: when the list is empty, how to handle this?
+        # FIXME: when the list is empty, how to handle this?
         if image_name not in self.list_model.stringList():
             idx = 0
         else:
@@ -613,7 +613,8 @@ class ClassificationBox(QCollapsible):
             if res == QMessageBox.No:
                 return
         self.ai.thread.finished.connect(self.finishClassify)
-        self.ai.thread.complete.connect(self.info_c.updateBar)
+        # TODO
+        # self.ai.thread.complete.connect(self.info_c.updateBar)
         self.ai.thread.start()
         self.bar_classify.setVisible(True)
 

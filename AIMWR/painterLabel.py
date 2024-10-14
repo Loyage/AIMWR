@@ -37,13 +37,15 @@ class PainterLabel(QLabel):
         self.rect_class_list_ori = []
         self.rect_class_list_edit = []
         self.painter = QPainter()
+        self.info_c = None
 
     def setInfoCollector(self, info_c):
         self.info_c = info_c
 
     def atImageChanged(self):
-        self.img_path = os.path.join(self.info_c.work_dir, self.info_c.img_name_current)
-        self.resetRectList()
+        if self.info_c:
+            self.img_path = os.path.join(self.info_c.work_dir, self.info_c.img_name_current)
+            self.resetRectList()
 
     def resetRectList(self):
         self.rect_class_list.clear()
