@@ -214,6 +214,7 @@ class ImageListBox(QCollapsible):
 
 class BasicSettingBox(QCollapsible):
     start_template_setting = Signal(name="start_template_setting")
+    update_class_setting = Signal(name="update_class_setting")
 
     def __init__(self, parent: QWidget | None = None):
         """
@@ -278,8 +279,11 @@ class BasicSettingBox(QCollapsible):
             return
         text = self.text_class.toPlainText()
         class_names = text.split("\n")
+        class_names = [name for name in class_names if name]  # delete empty lines
         self.info_c.resetClass(class_names)
         self.renew()
+
+        self.update_class_setting.emit()
 
     def renew(self):
         # renew class names
@@ -726,6 +730,24 @@ class EditToolBox(QCollapsible):
         self.repaint()
 
         # renew comb_class
+        self.comb_class.clear()
+        self.comb_class.addItem("[Unclassified]")
+        self.comb_class.addItems(class_names)
+
+    def resetClass(self):
+        class_names = self.info_c.class_names
+        # reset all widgets in box_filter
+        for i in range(self.lay_filter.count()):
+            self.lay_filter.itemAt(i).widget().deleteLater()
+        self.lay_filter.addWidget(self.btn_reselect)
+        for class_name in class_names:
+            ckb = QCheckBox(class_name)
+            ckb.setChecked(True)
+            self.ckb_classes.append(ckb)
+            self.lay_filter.addWidget(ckb)
+            ckb.stateChanged.connect(self.repaint)
+
+        # reset comb_class
         self.comb_class.clear()
         self.comb_class.addItem("[Unclassified]")
         self.comb_class.addItems(class_names)
