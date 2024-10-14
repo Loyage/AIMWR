@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel,
     QPushButton,
-    QListView,
+    QListWidget,
     QTextEdit,
     QMessageBox,
     QButtonGroup,
@@ -51,21 +51,17 @@ class ImageListBox(QCollapsible):
         # widget: btn_reset_filter + box_filter + image_list + lay_move + btn_update
         self.box_filter = QGroupBox("Filter")
         self.btn_reset_filter = QPushButton("Reset filter")
-        self.listview = QListView()
+        self.list_wid = QListWidget()
         self.lay_move = QHBoxLayout()
         self.btn_update = QPushButton("Update list")
         self.lay_all.addWidget(self.btn_reset_filter)
         self.lay_all.addWidget(self.box_filter)
-        self.lay_all.addWidget(self.listview)
+        self.lay_all.addWidget(self.list_wid)
         self.lay_all.addLayout(self.lay_move)
         # self.lay_all.addWidget(self.btn_update)
 
         # box_filter
         self._initUIFilter()
-
-        # image_list
-        self.list_model = QStringListModel()
-        self.listview.setModel(self.list_model)
 
         # lay_move: btn_up + btn_down
         self.btn_up = QPushButton("▲")
@@ -122,7 +118,7 @@ class ImageListBox(QCollapsible):
         self.work_dir = ""
 
     def _initSignals(self):
-        self.listview.clicked.connect(self.atListClicked)
+        self.list_wid.clicked.connect(self.atListClicked)
         self.btn_up.clicked.connect(self.moveUp)
         self.btn_down.clicked.connect(self.moveDown)
         self.btn_update.clicked.connect(self.renew)
@@ -142,30 +138,24 @@ class ImageListBox(QCollapsible):
         self.renew()
 
     def atListClicked(self, index):
-        image_name = self.list_model.stringList()[index.row()]
+        image_name = self.list_wid.currentItem().text()
         self.select_image.emit(image_name)
 
     def moveUp(self):
-        idx_now = self.listview.currentIndex().row()
+        idx_now = self.list_wid.currentIndex().row()
         if idx_now > 0:
-            self.listview.setCurrentIndex(self.list_model.index(idx_now - 1, 0))
+            self.list_wid.setCurrentRow(idx_now - 1)
         else:
-            self.listview.setCurrentIndex(self.list_model.index(0, 0))
-        self.select_image.emit(
-            self.list_model.stringList()[self.listview.currentIndex().row()]
-        )
+            self.list_wid.setCurrentRow(0)
+        self.select_image.emit(self.list_wid.currentItem().text())
 
     def moveDown(self):
-        idx_now = self.listview.currentIndex().row()
-        if idx_now < len(self.list_model.stringList()) - 1:
-            self.listview.setCurrentIndex(self.list_model.index(idx_now + 1, 0))
+        idx_now = self.list_wid.currentIndex().row()
+        if idx_now < self.list_wid.count() - 1:
+            self.list_wid.setCurrentRow(idx_now + 1)
         else:
-            self.listview.setCurrentIndex(
-                self.list_model.index(len(self.list_model.stringList()) - 1, 0)
-            )
-        self.select_image.emit(
-            self.list_model.stringList()[self.listview.currentIndex().row()]
-        )
+            self.list_wid.setCurrentRow(self.list_wid.count() - 1)
+        self.select_image.emit(self.list_wid.currentItem().text())
 
     def resetFilter(self):
         self.ckb_flt_extract_yes.setChecked(True)
@@ -185,7 +175,7 @@ class ImageListBox(QCollapsible):
         # self.ckb_flt_edit_no.setEnabled(extract_yes)
 
         # renew list
-        self.list_model.setStringList([])
+        self.list_wid.clear()
         _filter = ([], [], [])
         if self.ckb_flt_extract_yes.isChecked():
             _filter[0].append(True)
@@ -201,22 +191,24 @@ class ImageListBox(QCollapsible):
             _filter[2].append(False)
 
         image_names = self.info_c.getImageNamesByFilter(_filter)
-        self.list_model.setStringList(image_names)
-        self.listview.setModel(self.list_model)
+        self.list_wid.addItems(image_names)
 
         # choose image if it is in the list
         if self.info_c.img_name_current in image_names:
             idx = image_names.index(self.info_c.img_name_current)
-            self.listview.setCurrentIndex(self.list_model.index(idx, 0))
+            self.list_wid.setCurrentRow(idx)
             self.select_image.emit(self.info_c.img_name_current)
 
     def setImage(self, image_name: str):
         # FIXME: when the list is empty, how to handle this?
-        if image_name not in self.list_model.stringList():
+        string_list = [
+            self.list_wid.item(i).text() for i in range(self.list_wid.count())
+        ]
+        if image_name not in string_list:
             idx = 0
         else:
-            idx = self.list_model.stringList().index(image_name)
-        self.listview.setCurrentIndex(self.list_model.index(idx, 0))
+            idx = string_list.index(image_name)
+        self.list_wid.setCurrentRow(idx)
         self.select_image.emit(image_name)
 
 
