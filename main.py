@@ -53,8 +53,8 @@ class AIMWRApp(QApplication):
         self.scr_right = QScrollArea()
         self.spt_all.addWidget(self.wgt_left)
         self.spt_all.addWidget(self.scr_right)
-        self.spt_all.setStretchFactor(0, 6)
-        self.spt_all.setStretchFactor(1, 4)
+        self.spt_all.setStretchFactor(0, 3)
+        self.spt_all.setStretchFactor(1, 7)
 
         self.lay_left = QVBoxLayout()
         self.wgt_left.setLayout(self.lay_left)
@@ -131,10 +131,19 @@ class AIMWRApp(QApplication):
         self.settings = QSettings("AIMWR", "AIMWR")
         self.work_dir = self.settings.value("work_dir", "")
         self.image_name = self.settings.value("image_name", "")
+        self.model_dir = self.settings.value("model_dir", "")
+
+        self._initAiContainer()
+        self._initWorkDir()
+        self._initImageName()
+        self._initModelDir()
+
+    def _initAiContainer(self):
         self.ai = AiContainer()
+        self.box_classification.setAiContainer(self.ai)
+        self.box_train.setAiContainer(self.ai)
 
-        self.setupAiContainer()
-
+    def _initWorkDir(self):
         if not self.work_dir:
             return
         elif not os.path.exists(self.work_dir):
@@ -145,6 +154,7 @@ class AIMWRApp(QApplication):
             self.lin_workdir.setText(self.work_dir)
             self.setupInfoCollector(InfoCollector(self.work_dir))
 
+    def _initImageName(self):
         is_image_name_exist = os.path.exists(
             os.path.join(self.work_dir, self.image_name)
         )
@@ -154,10 +164,21 @@ class AIMWRApp(QApplication):
             self.settings.setValue("image_name", "")
         elif self.image_name:
             self.box_img_list.setImage(self.image_name)
-            self.info_c.img_name_current = self.image_name
+            if self.info_c:
+                self.info_c.img_name_current = self.image_name
             self.painter.atImageChanged()
         else:
             self.box_img_list.renew()
+
+    def _initModelDir(self):
+        if not self.model_dir:
+            return
+        elif not os.path.exists(self.model_dir):
+            self.model_dir = ""
+            self.settings.setValue("model_dir", "")
+        else:
+            if self.info_c:
+                self.info_c.model_dir = self.model_dir
 
     def _initSignals(self):
         self.btn_workdir.clicked.connect(self.chooseWorkspace)
@@ -222,10 +243,6 @@ class AIMWRApp(QApplication):
         self.box_classification.setVisible(True)
         self.box_train.setVisible(True)
         self.box_edit.setVisible(True)
-
-    def setupAiContainer(self):
-        self.box_classification.setAiContainer(self.ai)
-        self.box_train.setAiContainer(self.ai)
 
     def select_image(self, image_name: str):
         self.image_name = image_name

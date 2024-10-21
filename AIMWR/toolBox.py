@@ -26,6 +26,7 @@ from ._colors import COLORS
 
 
 # ImageList + BasicSettings(class setting, template setting) + CountBox + Extraction + Classification + EditTool(set showing settings) + TrainTool + TestTool
+# FIXME: classify的时候，line的读取
 class ImageListBox(QCollapsible):
     select_image = Signal(str, name="select_image")
 
@@ -403,6 +404,8 @@ class ExtractionBox(QCollapsible):
         self.btngroup.addButton(self.rad_unproc)
         self.btngroup.addButton(self.rad_all)
 
+        self.rad_current.setChecked(True)
+
     def _initData(self):
         self.extractor = None
 
@@ -414,12 +417,14 @@ class ExtractionBox(QCollapsible):
         self.extractor = Extractor(self.info_c.work_dir, self.info_c.P_TEMPLATE)
 
     def extract(self):
+        # check if template image exists
         if not self.info_c.hasTemplate():
             QMessageBox.warning(
                 self.widget, "Warning", "No template image found.", QMessageBox.Ok
             )
             return
 
+        # get image names to process
         if self.rad_current.isChecked():
             img_names = [self.info_c.img_name_current]
         elif self.rad_unproc.isChecked():
@@ -431,11 +436,13 @@ class ExtractionBox(QCollapsible):
         else:
             return
 
+        # start extraction
         wells_locs = []
         for img_name in img_names:
             wells_locs = self.extractor.wellExtract(img_name)
             self.writeResult(img_name, wells_locs)
 
+        # show message box
         if len(img_names) > 1:
             QMessageBox.information(
                 self.widget,
@@ -536,6 +543,8 @@ class ClassificationBox(QCollapsible):
         self.lay_all.addWidget(self.btn_classify)
         self.lay_all.addWidget(self.bar_classify)
 
+        self.rad_current.setChecked(True)
+
         # set group for radio buttons
         self.btngroup = QButtonGroup()
         self.btngroup.addButton(self.rad_current)
@@ -558,6 +567,8 @@ class ClassificationBox(QCollapsible):
 
     def classify(self):
         model_path = self.box_model.line_path.text()
+
+        # check if ai_thread is not running
         if self.ai.thread and self.ai.thread.isRunning():
             QMessageBox.warning(
                 self.widget,
@@ -567,18 +578,21 @@ class ClassificationBox(QCollapsible):
             )
             return
 
+        # check if model exists
         if not self.box_model.line_path.text():
             QMessageBox.warning(
                 self.widget, "Warning", "No model loaded.", QMessageBox.Ok
             )
             return
 
+        # get image names to classify
         if not os.path.exists(model_path):
             QMessageBox.warning(
                 self.widget, "Warning", "Model file not found.", QMessageBox.Ok
             )
             return
 
+        # get image names to classify
         if self.rad_current.isChecked():
             img_names = [self.info_c.img_name_current]
         elif self.rad_unproc.isChecked():
@@ -592,13 +606,17 @@ class ClassificationBox(QCollapsible):
         else:
             return
 
+        # check if there are images to classify
         if not img_names:
             QMessageBox.warning(
                 self.widget, "Warning", "No images to classify.", QMessageBox.Ok
             )
             return
 
+        # start classification thread
         self.ai.thread = ClassifyThread(self.info_c, model_path, img_names, self.parent)
+
+        # if using CPU, ask for confirmation
         if self.ai.thread.isUsingCpu():
             res = QMessageBox.question(
                 self.widget,
@@ -608,9 +626,12 @@ class ClassificationBox(QCollapsible):
             )
             if res == QMessageBox.No:
                 return
+
+        # connect signals
         self.ai.thread.finished.connect(self.finishClassify)
-        # TODO
-        # self.ai.thread.complete.connect(self.info_c.updateBar)
+        # TODO: self.ai.thread.complete.connect(self.info_c.updateBar)
+
+        # start thread
         self.ai.thread.start()
         self.bar_classify.setVisible(True)
 
