@@ -131,12 +131,10 @@ class AIMWRApp(QApplication):
         self.settings = QSettings("AIMWR", "AIMWR")
         self.work_dir = self.settings.value("work_dir", "")
         self.image_name = self.settings.value("image_name", "")
-        self.model_dir = self.settings.value("model_dir", "")
 
         self._initAiContainer()
         self._initWorkDir()
         self._initImageName()
-        self._initModelDir()
 
     def _initAiContainer(self):
         self.ai = AiContainer()
@@ -169,16 +167,6 @@ class AIMWRApp(QApplication):
             self.painter.atImageChanged()
         else:
             self.box_img_list.renew()
-
-    def _initModelDir(self):
-        if not self.model_dir:
-            return
-        elif not os.path.exists(self.model_dir):
-            self.model_dir = ""
-            self.settings.setValue("model_dir", "")
-        else:
-            if self.info_c:
-                self.info_c.model_dir = self.model_dir
 
     def _initSignals(self):
         self.btn_workdir.clicked.connect(self.chooseWorkspace)

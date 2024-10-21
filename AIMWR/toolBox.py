@@ -497,17 +497,40 @@ class ModelGroupBox(QGroupBox):
         self.btn_choose.clicked.connect(self.chooseModel)
 
     def chooseModel(self):
+        # get current directory
+        current_dir = ""
+        if self.line_path.text():
+            current_dir = os.path.dirname(self.line_path.text())
+        if not os.path.exists(current_dir):
+            current_dir = ""
+
+        # choose model
         model_path, _ = QFileDialog.getOpenFileName(
-            self, "Choose model", "", "Model files (*.pt, *.pth)"
+            self, "Choose model", current_dir, "Model files (*.pt, *.pth)"
         )
         if model_path:
             self.line_path.setText(model_path)
             self.model_msg = "Model loaded."
             self.lbl_msg.setText(self.model_msg)
 
-        QSettings().setValue("model_path", model_path)
-
         self.model_chosen.emit()
+
+    def saveSettings(self, name: str):
+        settings = QSettings("AIMWR", "AIMWR")
+        settings.setValue(name, self.line_path.text())
+
+    def loadSettings(self, name: str):
+        settings = QSettings("AIMWR", "AIMWR")
+        model_path = settings.value(name)
+        if not model_path:
+            return
+        elif not os.path.exists(model_path):
+            settings.setValue(name, "")
+            return
+
+        self.line_path.setText(model_path)
+        self.model_msg = "Model loaded."
+        self.lbl_msg.setText(self.model_msg)
 
 
 class ClassificationBox(QCollapsible):
@@ -557,8 +580,14 @@ class ClassificationBox(QCollapsible):
         self.model_msg = "No model loaded."
         self.box_model.lbl_msg.setText(self.model_msg)
 
+        self.box_model.loadSettings("classification_model")
+
     def _initSignals(self):
+        self.box_model.model_chosen.connect(self.atModelChosen)
         self.btn_classify.clicked.connect(self.classify)
+
+    def atModelChosen(self):
+        self.box_model.saveSettings("classification_model")
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
@@ -874,6 +903,8 @@ class TrainToolBox(QCollapsible):
         self.line_epoch.setText("1000")
         self.line_batch.setText("32")
 
+        self.box_model.loadSettings("train_model")
+
     def _initSignals(self):
         self.box_model.model_chosen.connect(self.atModelChosen)
         self.btn_train.clicked.connect(self.train)
@@ -885,6 +916,8 @@ class TrainToolBox(QCollapsible):
         self.ai = ai
 
     def atModelChosen(self):
+        self.box_model.saveSettings("train_model")
+
         model_path = self.box_model.line_path.text()
         if not model_path:
             return
@@ -974,8 +1007,14 @@ class TestToolBox(QCollapsible):
         self.model_msg = "No model loaded."
         self.box_model.lbl_msg.setText(self.model_msg)
 
+        self.box_model.loadSettings("test_model")
+
     def _initSignals(self):
         self.btn_test.clicked.connect(self.test)
+        self.box_model.model_chosen.connect(self.atModelChosen)
+
+    def atModelChosen(self):
+        self.box_model.saveSettings("test_model")
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
