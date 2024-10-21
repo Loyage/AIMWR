@@ -277,6 +277,9 @@ class AIMWRApp(QApplication):
         pixmap.save(self.info_c.P_TEMPLATE)
         self.box_setting.renew()
 
+        # reset template image in extractor
+        self.box_extraction.extractor.resetTemplate(self.info_c.P_TEMPLATE)
+
     def finish_extraction(self):
         self.painter.resetRectList()
         self.renew()

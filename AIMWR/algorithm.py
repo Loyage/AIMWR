@@ -18,6 +18,12 @@ class Extractor:
                 np.fromfile(template_path, dtype=np.uint8), cv2.IMREAD_GRAYSCALE
             )
 
+    def resetTemplate(self, template_path):
+        if os.path.exists(template_path):
+            self.t = cv2.imdecode(
+                np.fromfile(template_path, dtype=np.uint8), cv2.IMREAD_GRAYSCALE
+            )
+
     def wellExtract(self, img_name: str):
         match_thre = 0.15
 
