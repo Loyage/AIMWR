@@ -117,7 +117,7 @@ class ClassifyThread(QThread):
                 _, predicted = torch.max(output, 1)
 
             predicted = predicted.cpu().numpy()
-            classified_path = self.info_c.P_CLASSIFIED.format(img_name=img_name)
+            classified_path = self.info_c.P_CLASSIFY.format(img_name=img_name)
             with open(classified_path, "w") as f:
                 for loc, label in zip(wells_loc, predicted):
                     x, y, w, h = loc
