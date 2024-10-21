@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QProgressBar,
 )
-from PySide6.QtCore import QSettings, Signal
+from PySide6.QtCore import QSettings, Signal, Qt
 from PySide6.QtGui import QPixmap
 from ._colors import COLORS
 
@@ -319,7 +319,7 @@ class CountBox(QCollapsible):
         """
 
         super(CountBox, self).__init__(
-            "Count", parent, expandedIcon="▼", collapsedIcon="▶"
+            "Folder Count", parent, expandedIcon="▼", collapsedIcon="▶"
         )
         self._initUI()
         self._initData()
@@ -660,7 +660,8 @@ class ClassificationBox(QCollapsible):
 
         # connect signals
         self.ai.thread.finished.connect(self.finishClassify)
-        # TODO: self.ai.thread.complete.connect(self.info_c.updateBar)
+        # TODO: 确认功能是否正常
+        self.ai.thread.complete.connect(self.updateBar)
 
         # start thread
         self.ai.thread.start()
@@ -715,11 +716,13 @@ class EditToolBox(QCollapsible):
         self.collapse()
 
         # widget: comb_source + box_filter + comb_class + btn_edit_save
+        self.box_status = QGroupBox("Status")
         self.comb_source = QComboBox()
         self.box_show = QGroupBox("Filter")
         self.btn_edit_save = QPushButton("Start editing")
         self.lbl_tip = QLabel("Class to assign (Double click):")
         self.comb_class = QComboBox()
+        self.lay_all.addWidget(self.box_status)
         self.lay_all.addWidget(self.comb_source)
         self.lay_all.addWidget(self.box_show)
         self.lay_all.addWidget(self.btn_edit_save)
@@ -727,6 +730,16 @@ class EditToolBox(QCollapsible):
         self.lay_all.addWidget(self.comb_class)
         self.lbl_tip.setVisible(False)
         self.comb_class.setVisible(False)
+
+        # box_status: show status of current image
+        self.lay_status = QVBoxLayout()
+        self.box_status.setLayout(self.lay_status)
+        self.lbl_extracted = QLabel("Extracted: No")
+        self.lbl_classified = QLabel("Classified: No")
+        self.lbl_edited = QLabel("Edited: No")
+        self.lay_status.addWidget(self.lbl_extracted)
+        self.lay_status.addWidget(self.lbl_classified)
+        self.lay_status.addWidget(self.lbl_edited)
 
         # box_filter: check boxes for class names, and a button to reselect
         self.lay_filter = QVBoxLayout()
@@ -751,19 +764,27 @@ class EditToolBox(QCollapsible):
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
         self.resetUI()
+        self.renewStatus()
+
+    def renewStatus(self):
+        img_name = self.info_c.img_name_current
+        extracted, classified, edited = self.info_c.img_status[img_name]
+
+        self.lbl_extracted.setText(f"Extracted: {'Yes' if extracted else 'No'}")
+        self.lbl_extracted.setStyleSheet(f"color: {'green' if extracted else 'red'}")
+
+        self.lbl_classified.setText(f"Classified: {'Yes' if classified else 'No'}")
+        self.lbl_classified.setStyleSheet(f"color: {'green' if classified else 'red'}")
+
+        self.lbl_edited.setText(f"Edited: {'Yes' if edited else 'No'}")
+        self.lbl_edited.setStyleSheet(f"color: {'green' if edited else 'red'}")
 
     def resetUI(self):
         class_names = self.info_c.class_names
 
         # renew comb_source
         self.comb_source.clear()
-        # self.comb_source.addItem("[No source]")
-        # if self.info_c.hasExtracted(self.info_c.img_name_current):
-        #     self.comb_source.addItem("Extraction")
-        # if self.info_c.hasClassified(self.info_c.img_name_current):
-        #     self.comb_source.addItem("Classification")
-        # if self.info_c.hasEdit(self.info_c.img_name_current):
-        #     self.comb_source.addItem("Edit")
+        # TODO: 反映是否存在结果，并统计数量
         self.comb_source.addItems(
             ["[No source]", "Extraction", "Classification", "Edit"]
         )
