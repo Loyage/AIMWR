@@ -107,8 +107,8 @@ class ClassifyThread(QThread):
             with open(extract_path, "r") as f:
                 lines = f.readlines()
                 for line in lines:
-                    x, y, w, h = map(int, line.split())
-                    wells_loc.append(x, y, w, h)
+                    x, y, w, h, label = map(int, line.split(","))
+                    wells_loc.append((x, y, w, h))
 
             wells = getWellsTensor(img, wells_loc)
             with torch.no_grad():

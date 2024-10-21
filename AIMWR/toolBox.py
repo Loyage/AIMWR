@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QProgressBar,
 )
-from PySide6.QtCore import QStringListModel, Signal, QAbstractItemModel
+from PySide6.QtCore import QSettings, Signal
 from PySide6.QtGui import QPixmap
 from ._colors import COLORS
 
@@ -504,6 +504,8 @@ class ModelGroupBox(QGroupBox):
             self.line_path.setText(model_path)
             self.model_msg = "Model loaded."
             self.lbl_msg.setText(self.model_msg)
+
+        QSettings().setValue("model_path", model_path)
 
         self.model_chosen.emit()
 
