@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSplitter,
 )
-from PySide6.QtCore import QSettings, Qt
+from PySide6.QtCore import QSettings
 from PySide6.QtGui import QPixmap
 from AIMWR.painterLabel import PainterLabel
 from AIMWR.toolBox import (

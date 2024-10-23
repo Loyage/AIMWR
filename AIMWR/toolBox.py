@@ -26,7 +26,6 @@ from ._colors import COLORS
 
 
 # ImageList + BasicSettings(class setting, template setting) + CountBox + Extraction + Classification + EditTool(set showing settings) + TrainTool + TestTool
-# FIXME: classify的时候，line的读取
 class ImageListBox(QCollapsible):
     select_image = Signal(str, name="select_image")
 
