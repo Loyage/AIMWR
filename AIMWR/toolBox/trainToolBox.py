@@ -37,17 +37,17 @@ class TrainToolBox(QCollapsible):
         self.widget.setLayout(self.lay_all)
         self.collapse()
 
-        # widget: box_model + box_params + btn_train + bar_train + lbl_result
+        # widget: box_model + box_params + btn_train + bar_train + lab_result
         self.box_model = ModelGroupBox("Model")
         self.box_params = QGroupBox("Parameters")
         self.btn_train = QPushButton("Train")
         self.bar_train = QProgressBar()
-        self.lbl_result = QLabel()
+        self.lab_result = QLabel()
         self.lay_all.addWidget(self.box_model)
         self.lay_all.addWidget(self.box_params)
         self.lay_all.addWidget(self.btn_train)
         self.lay_all.addWidget(self.bar_train)
-        self.lay_all.addWidget(self.lbl_result)
+        self.lay_all.addWidget(self.lab_result)
 
         # box_params: choose model type, and parameters
         self.lay_params = QVBoxLayout()
@@ -57,18 +57,18 @@ class TrainToolBox(QCollapsible):
         self.comb_model.addItems(["MobileNet", "ResNet18", "ResNet50"])
         self.lay_params.addWidget(self.comb_model)
 
-        self.lbl_epoch = QLabel("Max epochs:")
+        self.lab_epoch = QLabel("Max epochs:")
         self.line_epoch = QLineEdit()
-        self.lbl_batch = QLabel("Batch size:")
+        self.lab_batch = QLabel("Batch size:")
         self.line_batch = QLineEdit()
-        self.lay_params.addWidget(self.lbl_epoch)
+        self.lay_params.addWidget(self.lab_epoch)
         self.lay_params.addWidget(self.line_epoch)
-        self.lay_params.addWidget(self.lbl_batch)
+        self.lay_params.addWidget(self.lab_batch)
         self.lay_params.addWidget(self.line_batch)
 
     def _initData(self):
         self.model_msg = "No model loaded."
-        self.box_model.lbl_msg.setText(self.model_msg)
+        self.box_model.lab_msg.setText(self.model_msg)
         self.line_epoch.setText("1000")
         self.line_batch.setText("32")
 
@@ -134,9 +134,9 @@ class TrainToolBox(QCollapsible):
         QMessageBox.information(
             self.widget, "Info", "Training finished.", QMessageBox.Ok
         )
-        self.lbl_result.setText("Training finished. Model saved.")
+        self.lab_result.setText("Training finished. Model saved.")
         self.bar_train.setValue(0)
 
     def updateBar(self, epoch, idx, loss):
         self.bar_train.setValue(epoch / self.max_epoch * 100)
-        self.lbl_result.setText(f"Epoch: {epoch}, Loss: {loss:.3f}")
+        self.lab_result.setText(f"Epoch: {epoch}, Loss: {loss:.3f}")

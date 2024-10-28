@@ -27,15 +27,15 @@ class CountBox(QCollapsible):
         self.widget.setLayout(self.lay_all)
         self.collapse()
 
-        self.lbl_img = QLabel("Images: 0")
-        self.lbl_extracted = QLabel("Extracted: 0")
-        self.lbl_classified = QLabel("Classified: 0")
-        self.lbl_edited = QLabel("Edited: 0")
+        self.lab_img = QLabel("Images: 0")
+        self.lab_extracted = QLabel("Extracted: 0")
+        self.lab_classified = QLabel("Classified: 0")
+        self.lab_edited = QLabel("Edited: 0")
 
-        self.lay_all.addWidget(self.lbl_img)
-        self.lay_all.addWidget(self.lbl_extracted)
-        self.lay_all.addWidget(self.lbl_classified)
-        self.lay_all.addWidget(self.lbl_edited)
+        self.lay_all.addWidget(self.lab_img)
+        self.lay_all.addWidget(self.lab_extracted)
+        self.lay_all.addWidget(self.lab_classified)
+        self.lay_all.addWidget(self.lab_edited)
 
     def _initData(self):
         self.num_img = 0
@@ -57,7 +57,7 @@ class CountBox(QCollapsible):
         self.num_classified = len(img_classified)
         self.num_edited = len(img_edited)
 
-        self.lbl_img.setText(f"Images: {self.num_img}")
-        self.lbl_extracted.setText(f"Extracted: {self.num_extracted}")
-        self.lbl_classified.setText(f"Classified: {self.num_classified}")
-        self.lbl_edited.setText(f"Edited: {self.num_edited}")
+        self.lab_img.setText(f"Images: {self.num_img}")
+        self.lab_extracted.setText(f"Extracted: {self.num_extracted}")
+        self.lab_classified.setText(f"Classified: {self.num_classified}")
+        self.lab_edited.setText(f"Edited: {self.num_edited}")

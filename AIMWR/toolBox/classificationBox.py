@@ -60,7 +60,7 @@ class ClassificationBox(QCollapsible):
 
     def _initData(self):
         self.model_msg = "No model loaded."
-        self.box_model.lbl_msg.setText(self.model_msg)
+        self.box_model.lab_msg.setText(self.model_msg)
 
         self.box_model.loadSettings("classification_model")
 
@@ -169,4 +169,4 @@ class ClassificationBox(QCollapsible):
         self.num_classified = len(img_classified)
         self.num_extracted = len(img_extracted)
 
-        self.box_model.lbl_msg.setText(self.model_msg)
+        self.box_model.lab_msg.setText(self.model_msg)

@@ -43,26 +43,26 @@ class EditToolBox(QCollapsible):
         self.comb_source = QComboBox()
         self.box_show = QGroupBox("Filter")
         self.btn_edit_save = QPushButton("Start editing")
-        self.lbl_tip = QLabel("Class to assign (Double click):")
+        self.lab_tip = QLabel("Class to assign (Double click):")
         self.comb_class = QComboBox()
         self.lay_all.addWidget(self.box_status)
         self.lay_all.addWidget(self.comb_source)
         self.lay_all.addWidget(self.box_show)
         self.lay_all.addWidget(self.btn_edit_save)
-        self.lay_all.addWidget(self.lbl_tip)
+        self.lay_all.addWidget(self.lab_tip)
         self.lay_all.addWidget(self.comb_class)
-        self.lbl_tip.setVisible(False)
+        self.lab_tip.setVisible(False)
         self.comb_class.setVisible(False)
 
         # box_status: show status of current image
         self.lay_status = QVBoxLayout()
         self.box_status.setLayout(self.lay_status)
-        self.lbl_extracted = QLabel("Extracted: No")
-        self.lbl_classified = QLabel("Classified: No")
-        self.lbl_edited = QLabel("Edited: No")
-        self.lay_status.addWidget(self.lbl_extracted)
-        self.lay_status.addWidget(self.lbl_classified)
-        self.lay_status.addWidget(self.lbl_edited)
+        self.lab_extracted = QLabel("Extracted: No")
+        self.lab_classified = QLabel("Classified: No")
+        self.lab_edited = QLabel("Edited: No")
+        self.lay_status.addWidget(self.lab_extracted)
+        self.lay_status.addWidget(self.lab_classified)
+        self.lay_status.addWidget(self.lab_edited)
 
         # box_filter: check boxes for class names, and a button to reselect
         self.lay_filter = QVBoxLayout()
@@ -95,14 +95,14 @@ class EditToolBox(QCollapsible):
             return
         extracted, classified, edited = self.info_c.img_status[img_name]
 
-        self.lbl_extracted.setText(f"Extracted: {'Yes' if extracted else 'No'}")
-        self.lbl_extracted.setStyleSheet(f"color: {'green' if extracted else 'red'}")
+        self.lab_extracted.setText(f"Extracted: {'Yes' if extracted else 'No'}")
+        self.lab_extracted.setStyleSheet(f"color: {'green' if extracted else 'red'}")
 
-        self.lbl_classified.setText(f"Classified: {'Yes' if classified else 'No'}")
-        self.lbl_classified.setStyleSheet(f"color: {'green' if classified else 'red'}")
+        self.lab_classified.setText(f"Classified: {'Yes' if classified else 'No'}")
+        self.lab_classified.setStyleSheet(f"color: {'green' if classified else 'red'}")
 
-        self.lbl_edited.setText(f"Edited: {'Yes' if edited else 'No'}")
-        self.lbl_edited.setStyleSheet(f"color: {'green' if edited else 'red'}")
+        self.lab_edited.setText(f"Edited: {'Yes' if edited else 'No'}")
+        self.lab_edited.setStyleSheet(f"color: {'green' if edited else 'red'}")
 
     def resetUI(self):
         class_names = self.info_c.class_names
@@ -183,7 +183,7 @@ class EditToolBox(QCollapsible):
         self.btn_text = "Save result" if self.is_editing else "Start editing"
         self.btn_edit_save.setText(self.btn_text)
 
-        self.lbl_tip.setVisible(self.is_editing)
+        self.lab_tip.setVisible(self.is_editing)
         self.comb_class.setVisible(self.is_editing)
 
         if self.is_editing:

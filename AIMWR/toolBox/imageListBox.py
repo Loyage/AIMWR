@@ -62,9 +62,9 @@ class ImageListBox(QCollapsible):
         self.box_filter.setLayout(self.lay_filter)
 
         # Extracted
-        self.lbl_flt_extract = QLabel("Extracted:")
+        self.lab_flt_extract = QLabel("Extracted:")
         self.lay_flt_extract = QHBoxLayout()
-        self.lay_filter.addWidget(self.lbl_flt_extract)
+        self.lay_filter.addWidget(self.lab_flt_extract)
         self.lay_filter.addLayout(self.lay_flt_extract)
 
         self.ckb_flt_extract_yes = QCheckBox("Yes")
@@ -73,9 +73,9 @@ class ImageListBox(QCollapsible):
         self.lay_flt_extract.addWidget(self.ckb_flt_extract_no)
 
         # Classified
-        self.lbl_flt_classify = QLabel("Classified:")
+        self.lab_flt_classify = QLabel("Classified:")
         self.lay_flt_classify = QHBoxLayout()
-        self.lay_filter.addWidget(self.lbl_flt_classify)
+        self.lay_filter.addWidget(self.lab_flt_classify)
         self.lay_filter.addLayout(self.lay_flt_classify)
 
         self.ckb_flt_classify_yes = QCheckBox("Yes")
@@ -84,9 +84,9 @@ class ImageListBox(QCollapsible):
         self.lay_flt_classify.addWidget(self.ckb_flt_classify_no)
 
         # Edited
-        self.lbl_flt_edit = QLabel("Edited:")
+        self.lab_flt_edit = QLabel("Edited:")
         self.lay_flt_edit = QHBoxLayout()
-        self.lay_filter.addWidget(self.lbl_flt_edit)
+        self.lay_filter.addWidget(self.lab_flt_edit)
         self.lay_filter.addLayout(self.lay_flt_edit)
 
         self.ckb_flt_edit_yes = QCheckBox("Yes")

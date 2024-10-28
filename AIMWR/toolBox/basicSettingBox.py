@@ -42,15 +42,15 @@ class BasicSettingBox(QCollapsible):
         self.text_class = QTextEdit()  # TODO: 修改为list类型，添加颜色
         self.btn_class = QPushButton("Reset")
 
-        self.lbl_temp_msg = QLabel()
-        self.lbl_temp_img = QLabel()
+        self.lab_temp_msg = QLabel()
+        self.lab_temp_img = QLabel()
         self.btn_temp = QPushButton("Setup template")
 
         self.lay_all.addWidget(self.list_class)
         self.lay_all.addWidget(self.text_class)
         self.lay_all.addWidget(self.btn_class)
-        self.lay_all.addWidget(self.lbl_temp_msg)
-        self.lay_all.addWidget(self.lbl_temp_img)
+        self.lay_all.addWidget(self.lab_temp_msg)
+        self.lay_all.addWidget(self.lab_temp_img)
         self.lay_all.addWidget(self.btn_temp)
 
     def _initData(self):
@@ -63,7 +63,7 @@ class BasicSettingBox(QCollapsible):
 
         self.text_class.setReadOnly(not self.is_resetting_class)
         self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
-        self.lbl_temp_img.setVisible(self.has_template)
+        self.lab_temp_img.setVisible(self.has_template)
         self.btn_temp.setText(
             "Change template" if self.has_template else "Setup template"
         )
@@ -97,7 +97,7 @@ class BasicSettingBox(QCollapsible):
         self.text_class.setReadOnly(not self.is_resetting_class)
         # renew template messages
         self.has_template = self.info_c.hasTemplate()
-        self.lbl_temp_img.setVisible(self.has_template)
+        self.lab_temp_img.setVisible(self.has_template)
         self.text_class.setReadOnly(not self.is_resetting_class)
         self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
         self.btn_temp.setText(
@@ -106,11 +106,11 @@ class BasicSettingBox(QCollapsible):
         if self.has_template:
             self.path = self.info_c.P_TEMPLATE
             self.img = QPixmap(self.path)
-            self.lbl_temp_img.setPixmap(self.img)
-            self.lbl_temp_img.resize(self.lbl_temp_img.pixmap().size())
-            self.img_size = self.lbl_temp_img.pixmap().size()
-            self.lbl_temp_msg.setText(
+            self.lab_temp_img.setPixmap(self.img)
+            self.lab_temp_img.resize(self.lab_temp_img.pixmap().size())
+            self.img_size = self.lab_temp_img.pixmap().size()
+            self.lab_temp_msg.setText(
                 f"Template image: {self.img_size.width()}x{self.img_size.height()}"
             )
         else:
-            self.lbl_temp_msg.setText("No template image found.")
+            self.lab_temp_msg.setText("No template image found.")

@@ -34,17 +34,17 @@ class TestToolBox(QCollapsible):
         self.widget.setLayout(self.lay_all)
         self.collapse()
 
-        # widget: box_model + btn_test + lbl_result
+        # widget: box_model + btn_test + lab_result
         self.box_model = ModelGroupBox("Model")
         self.btn_test = QPushButton("Test")
-        self.lbl_result = QLabel()
+        self.lab_result = QLabel()
         self.lay_all.addWidget(self.box_model)
         self.lay_all.addWidget(self.btn_test)
-        self.lay_all.addWidget(self.lbl_result)
+        self.lay_all.addWidget(self.lab_result)
 
     def _initData(self):
         self.model_msg = "No model loaded."
-        self.box_model.lbl_msg.setText(self.model_msg)
+        self.box_model.lab_msg.setText(self.model_msg)
 
         self.box_model.loadSettings("test_model")
 
@@ -95,7 +95,7 @@ class TestToolBox(QCollapsible):
     def atClassifyFinished(self):
         self.countResult()
         QMessageBox.information(self.widget, "Info", "Test finished.", QMessageBox.Ok)
-        self.lbl_result.setText("Test finished.")
+        self.lab_result.setText("Test finished.")
 
     def countResult(self):
         img_status = self.info_c.img_status
@@ -123,5 +123,5 @@ class TestToolBox(QCollapsible):
             if clas_label == edit_label:
                 correct += 1
         accuracy = correct / total * 100
-        self.lbl_result.setText(f"Accuracy: {accuracy:.2f}%")
+        self.lab_result.setText(f"Accuracy: {accuracy:.2f}%")
         return accuracy

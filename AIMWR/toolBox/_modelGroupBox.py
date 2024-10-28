@@ -31,15 +31,15 @@ class ModelGroupBox(QGroupBox):
 
         self.line_path = QLineEdit()
         self.btn_choose = QPushButton("Choose model")
-        self.lbl_msg = QLabel()
+        self.lab_msg = QLabel()
 
         self.lay_all.addWidget(self.line_path)
         self.lay_all.addWidget(self.btn_choose)
-        self.lay_all.addWidget(self.lbl_msg)
+        self.lay_all.addWidget(self.lab_msg)
 
     def _initData(self):
         self.model_msg = "No model loaded."
-        self.lbl_msg.setText(self.model_msg)
+        self.lab_msg.setText(self.model_msg)
 
     def _initSignals(self):
         self.btn_choose.clicked.connect(self.chooseModel)
@@ -59,7 +59,7 @@ class ModelGroupBox(QGroupBox):
         if model_path:
             self.line_path.setText(model_path)
             self.model_msg = "Model loaded."
-            self.lbl_msg.setText(self.model_msg)
+            self.lab_msg.setText(self.model_msg)
 
         self.model_chosen.emit()
 
@@ -78,4 +78,4 @@ class ModelGroupBox(QGroupBox):
 
         self.line_path.setText(model_path)
         self.model_msg = "Model loaded."
-        self.lbl_msg.setText(self.model_msg)
+        self.lab_msg.setText(self.model_msg)
