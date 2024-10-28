@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFileDialog,
     QMessageBox,
+    QInputDialog,
     QScrollArea,
     QSpacerItem,
     QSizePolicy,
@@ -17,19 +18,18 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QPixmap
 from AIMWR.painterLabel import PainterLabel
-from AIMWR.toolBox import (
-    ImageListBox,
-    BasicSettingBox,
-    CountBox,
-    ExtractionBox,
-    ClassificationBox,
-    EditToolBox,
-    TrainToolBox,
-)
+from AIMWR.toolBox.basicSettingBox import BasicSettingBox
+from AIMWR.toolBox.countBox import CountBox
+from AIMWR.toolBox.extractionBox import ExtractionBox
+from AIMWR.toolBox.classificationBox import ClassificationBox
+from AIMWR.toolBox.editToolBox import EditToolBox
+from AIMWR.toolBox.trainToolBox import TrainToolBox
+from AIMWR.toolBox.imageListBox import ImageListBox
 from AIMWR.infoCollector import InfoCollector
 from AIMWR.algorithm import AiContainer
 
 
+# TODO: 添加统计功能
 class AIMWRApp(QApplication):
 
     def __init__(self, *args, **kwargs):
@@ -143,7 +143,7 @@ class AIMWRApp(QApplication):
 
     def _initWorkDir(self):
         if not self.work_dir:
-            return
+            self.chooseWorkDir()
         elif not os.path.exists(self.work_dir):
             self.warn("Workspace not exists")
             self.work_dir = ""
@@ -169,7 +169,7 @@ class AIMWRApp(QApplication):
             self.box_img_list.renew()
 
     def _initSignals(self):
-        self.btn_workdir.clicked.connect(self.chooseWorkspace)
+        self.btn_workdir.clicked.connect(self.changeWorkspace)
         self.btn_zoom_in.clicked.connect(self.painter.zoomIn)
         self.btn_zoom_reset.clicked.connect(self.painter.zoomReset)
         self.btn_zoom_out.clicked.connect(self.painter.zoomOut)
@@ -185,31 +185,56 @@ class AIMWRApp(QApplication):
 
         self.painter.finish_template_setting.connect(self.finish_template_setting)
 
-    def chooseWorkspace(self):
+    def changeWorkspace(self):
+        self.settings.setValue("work_dir", "")
+        self._initData()
+
+    def chooseWorkDir(self):
         self.work_dir = QFileDialog.getExistingDirectory(
             self.wgt_all, "Choose workspace", self.work_dir
         )
+
+        # check if workspace is valid
         if not self.work_dir:
             self.warn("No workspace selected")
             return
+        if not os.path.exists(self.work_dir):
+            self.warn("Workspace not exists")
+            self.work_dir = ""
+            return
 
-        if not os.path.exists(os.path.join(self.work_dir, "AIMWR")):
-            # 弹出提示框，询问是否创建文件夹
-            result = QMessageBox.question(
-                self.wgt_all,
-                "Create folder",
-                "For the first time, you need to create a folder named 'AIMWR' in the workspace.",
-            )
-            if result == QMessageBox.Yes:
-                os.makedirs(os.path.join(self.work_dir, "AIMWR"))
-            else:
-                return
+        # setup info collector, if no class names, initialize class num
+        self.setupInfoCollector(InfoCollector(self.work_dir))
+        if self.info_c.class_names == []:
+            self.initClassNum()
 
+        # save settings
         self.lin_workdir.setText(self.work_dir)
         self.settings.setValue("work_dir", self.work_dir)
+        self.settings.setValue("image_name", "")
         self.cleanImage()
-        self.setupInfoCollector(InfoCollector(self.work_dir))
         self.box_img_list.renew()
+
+    def initClassNum(self):
+        ok = False
+        while not ok:
+            text, ok = QInputDialog().getText(
+                self.wgt_all,
+                "Workspace initialization",
+                "For the first time using this folder as AIMWR workspace, please determine the number of categories of microwells.",
+                QLineEdit.Normal,
+                "6",
+            )
+            if not text.isdigit():
+                self.warn("Please input a number.")
+                ok = False
+            else:
+                class_num = int(text)
+                with open(
+                    os.path.join(self.work_dir, "AIMWR", "class_names.txt"), "w"
+                ) as f:
+                    for i in range(class_num):
+                        f.write(f"class_{i}\n")
 
     def setupInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c

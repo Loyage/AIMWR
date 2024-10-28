@@ -130,6 +130,8 @@ class ImageListBox(QCollapsible):
         self.select_image.emit(image_name)
 
     def moveUp(self):
+        if self.list_wid.count() == 0:
+            return
         idx_now = self.list_wid.currentIndex().row()
         if idx_now > 0:
             self.list_wid.setCurrentRow(idx_now - 1)
@@ -138,6 +140,8 @@ class ImageListBox(QCollapsible):
         self.select_image.emit(self.list_wid.currentItem().text())
 
     def moveDown(self):
+        if self.list_wid.count() == 0:
+            return
         idx_now = self.list_wid.currentIndex().row()
         if idx_now < self.list_wid.count() - 1:
             self.list_wid.setCurrentRow(idx_now + 1)

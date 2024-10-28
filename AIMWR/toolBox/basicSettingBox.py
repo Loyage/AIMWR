@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QLabel,
     QTextEdit,
+    QListWidget,
 )
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
@@ -35,13 +36,17 @@ class BasicSettingBox(QCollapsible):
         self.widget.setLayout(self.lay_all)
         self.collapse()
 
-        self.text_class = QTextEdit()
+        self.lab_class = QLabel("Class names:")
+        self.list_class = QListWidget()
+
+        self.text_class = QTextEdit()  # TODO: 修改为list类型，添加颜色
         self.btn_class = QPushButton("Reset")
 
         self.lbl_temp_msg = QLabel()
         self.lbl_temp_img = QLabel()
         self.btn_temp = QPushButton("Setup template")
 
+        self.lay_all.addWidget(self.list_class)
         self.lay_all.addWidget(self.text_class)
         self.lay_all.addWidget(self.btn_class)
         self.lay_all.addWidget(self.lbl_temp_msg)

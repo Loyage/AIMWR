@@ -91,6 +91,8 @@ class EditToolBox(QCollapsible):
 
     def renewStatus(self):
         img_name = self.info_c.img_name_current
+        if not img_name:
+            return
         extracted, classified, edited = self.info_c.img_status[img_name]
 
         self.lbl_extracted.setText(f"Extracted: {'Yes' if extracted else 'No'}")
