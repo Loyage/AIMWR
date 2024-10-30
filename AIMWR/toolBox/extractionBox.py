@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget,
+    QLabel,
     QVBoxLayout,
     QPushButton,
     QRadioButton,
@@ -7,6 +8,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import Signal
+from PySide6.QtGui import QPixmap
 
 from .._collapsible import QCollapsible
 from ..infoCollector import InfoCollector
@@ -14,6 +16,7 @@ from ..algorithm import Extractor
 
 
 class ExtractionBox(QCollapsible):
+    start_template_setting = Signal(name="start_template_setting")
     finish_extraction = Signal(name="finish_extraction")
 
     def __init__(self, parent: QWidget | None = None):
@@ -35,6 +38,13 @@ class ExtractionBox(QCollapsible):
         self.widget.setLayout(self.lay_all)
         self.collapse()
 
+        self.lab_temp_msg = QLabel()
+        self.lab_temp_img = QLabel()
+        self.btn_temp = QPushButton("Setup template")
+        self.lay_all.addWidget(self.lab_temp_msg)
+        self.lay_all.addWidget(self.lab_temp_img)
+        self.lay_all.addWidget(self.btn_temp)
+
         self.rad_current = QRadioButton("Current")
         self.rad_unproc = QRadioButton("Unprocessed")
         self.rad_all = QRadioButton("All")
@@ -54,13 +64,40 @@ class ExtractionBox(QCollapsible):
 
     def _initData(self):
         self.extractor = None
+        self.has_template = False
+        self.template_path = ""
+        self.lab_temp_img.setVisible(self.has_template)
+        self.btn_temp.setText(
+            "Change template" if self.has_template else "Setup template"
+        )
 
     def _initSignals(self):
         self.btn_extract.clicked.connect(self.extract)
+        self.btn_temp.clicked.connect(self.start_template_setting.emit)
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
         self.extractor = Extractor(self.info_c.work_dir, self.info_c.P_TEMPLATE)
+        self.renewTemplate()
+
+    def renewTemplate(self):
+        # renew template messages
+        self.has_template = self.info_c.hasTemplate()
+        self.lab_temp_img.setVisible(self.has_template)
+        self.btn_temp.setText(
+            "Change template" if self.has_template else "Setup template"
+        )
+        if self.has_template:
+            self.path = self.info_c.P_TEMPLATE
+            self.img = QPixmap(self.path)
+            self.lab_temp_img.setPixmap(self.img)
+            self.lab_temp_img.resize(self.lab_temp_img.pixmap().size())
+            self.img_size = self.lab_temp_img.pixmap().size()
+            self.lab_temp_msg.setText(
+                f"Template size: {self.img_size.width()}x{self.img_size.height()}"
+            )
+        else:
+            self.lab_temp_msg.setText("No template image found.")
 
     def extract(self):
         # check if template image exists

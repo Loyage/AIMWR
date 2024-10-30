@@ -171,8 +171,8 @@ class AIMWRApp(QApplication):
         self.btn_zoom_out.clicked.connect(self.painter.zoomOut)
 
         self.box_img_list.select_image.connect(self.select_image)
-        self.box_setting.start_template_setting.connect(self.start_template_setting)
         self.box_setting.update_class_setting.connect(self.box_edit.resetClass)
+        self.box_extraction.start_template_setting.connect(self.start_template_setting)
         self.box_extraction.finish_extraction.connect(self.finish_extraction)
         self.box_edit.change_source.connect(self.painter.resetRectList)
         self.box_edit.start_edit.connect(self.start_edit)
@@ -286,7 +286,7 @@ class AIMWRApp(QApplication):
 
         # save template img
         pixmap.save(self.info_c.P_TEMPLATE)
-        self.box_setting.renew()
+        self.box_extraction.renewTemplate()
 
         # reset template image in extractor
         self.box_extraction.extractor.resetTemplate(self.info_c.P_TEMPLATE)
