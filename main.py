@@ -19,7 +19,6 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QPixmap
 from AIMWR.painterLabel import PainterLabel
 from AIMWR.toolBox.basicSettingBox import BasicSettingBox
-from AIMWR.toolBox.countBox import CountBox
 from AIMWR.toolBox.extractionBox import ExtractionBox
 from AIMWR.toolBox.classificationBox import ClassificationBox
 from AIMWR.toolBox.editToolBox import EditToolBox
@@ -100,7 +99,6 @@ class AIMWRApp(QApplication):
         # lay_right: img_list + basic_setting + extraction + spacer
         self.box_img_list = ImageListBox(self.wgt_all)
         self.box_setting = BasicSettingBox(self.wgt_all)
-        self.box_count = CountBox(self.wgt_all)
         self.box_extraction = ExtractionBox(self.wgt_all)
         self.box_classification = ClassificationBox(self.wgt_all)
         self.box_edit = EditToolBox(self.wgt_all)
@@ -108,7 +106,6 @@ class AIMWRApp(QApplication):
         self.spacer = QSpacerItem(20, 40, vData=QSizePolicy.Policy.Expanding)
         self.lay_right.addWidget(self.box_img_list)
         self.lay_right.addWidget(self.box_setting)
-        self.lay_right.addWidget(self.box_count)
         self.lay_right.addWidget(self.box_extraction)
         self.lay_right.addWidget(self.box_classification)
         self.lay_right.addWidget(self.box_edit)
@@ -117,7 +114,6 @@ class AIMWRApp(QApplication):
 
         self.box_img_list.setVisible(False)
         self.box_setting.setVisible(False)
-        self.box_count.setVisible(False)
         self.box_extraction.setVisible(False)
         self.box_classification.setVisible(False)
         self.box_edit.setVisible(False)
@@ -240,7 +236,6 @@ class AIMWRApp(QApplication):
 
         self.box_img_list.setInfoCollector(info_c)
         self.box_setting.setInfoCollector(info_c)
-        self.box_count.setInfoCollector(info_c)
         self.box_extraction.setInfoCollector(info_c)
         self.box_classification.setInfoCollector(info_c)
         self.box_edit.setInfoCollector(info_c)
@@ -249,7 +244,6 @@ class AIMWRApp(QApplication):
 
         self.box_img_list.setVisible(True)
         self.box_setting.setVisible(True)
-        self.box_count.setVisible(True)
         self.box_extraction.setVisible(True)
         self.box_classification.setVisible(True)
         self.box_train.setVisible(True)
