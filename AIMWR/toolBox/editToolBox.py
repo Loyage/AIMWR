@@ -180,6 +180,10 @@ class EditToolBox(QCollapsible):
     def editOrSave(self):
         self.is_editing = not self.is_editing
 
+        self.comb_source.setEnabled(
+            not self.is_editing
+        )  # disable comb_class when editing
+
         self.btn_text = "Save result" if self.is_editing else "Start editing"
         self.btn_edit_save.setText(self.btn_text)
 

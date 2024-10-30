@@ -256,10 +256,16 @@ class AIMWRApp(QApplication):
         self.box_edit.setVisible(True)
 
     def select_image(self, image_name: str):
+        is_editing = self.painter.state == self.painter.EDITING
+        if is_editing:
+            QMessageBox.warning(self.wgt_all, "Warning", "Please finish editing first")
+            return
+
         self.image_name = image_name
         self.info_c.img_name_current = image_name
         self.settings.setValue("image_name", self.image_name)
         self.painter.atImageChanged()
+        self.box_edit.renewStatus()
 
     def start_template_setting(self):
         self.painter.setDragState()
@@ -296,7 +302,7 @@ class AIMWRApp(QApplication):
         self.renew()
 
     def start_edit(self):
-        self.painter.setEditState()
+        self.painter.atEditStart()
 
     def finish_edit(self):
         self.painter.setNormalState()
