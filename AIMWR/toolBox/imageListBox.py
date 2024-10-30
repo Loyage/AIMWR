@@ -38,11 +38,9 @@ class ImageListBox(QCollapsible):
 
         # widget: btn_reset_filter + box_filter + image_list + lay_move + btn_update
         self.box_filter = QGroupBox("Filter")
-        self.btn_reset_filter = QPushButton("Reset filter")
         self.list_wid = QListWidget()
         self.lay_move = QHBoxLayout()
         self.btn_update = QPushButton("Update list")
-        self.lay_all.addWidget(self.btn_reset_filter)
         self.lay_all.addWidget(self.box_filter)
         self.lay_all.addWidget(self.list_wid)
         self.lay_all.addLayout(self.lay_move)
@@ -60,6 +58,10 @@ class ImageListBox(QCollapsible):
     def _initUIFilter(self):
         self.lay_filter = QVBoxLayout()
         self.box_filter.setLayout(self.lay_filter)
+
+        # Reset filter button
+        self.btn_reset_filter = QPushButton("Reset filter")
+        self.lay_filter.addWidget(self.btn_reset_filter)
 
         # Extracted
         self.lab_flt_extract = QLabel("Extracted:")
@@ -101,6 +103,10 @@ class ImageListBox(QCollapsible):
         self.ckb_flt_classify_no.setChecked(True)
         self.ckb_flt_edit_yes.setChecked(True)
         self.ckb_flt_edit_no.setChecked(True)
+
+        # count result
+        self.lab_flt_count = QLabel("Filter count: 0 images")
+        self.lay_filter.addWidget(self.lab_flt_count)
 
     def _initData(self):
         self.work_dir = ""
@@ -184,6 +190,9 @@ class ImageListBox(QCollapsible):
 
         image_names = self.info_c.getImageNamesByFilter(_filter)
         self.list_wid.addItems(image_names)
+
+        # count number of filtered images
+        self.lab_flt_count.setText(f"Filter count: {len(image_names)} images")
 
         # choose image if it is in the list
         if self.info_c.img_name_current in image_names:

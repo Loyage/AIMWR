@@ -3,14 +3,16 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QPushButton,
     QLabel,
+    QListWidgetItem,
     QTextEdit,
     QListWidget,
 )
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QPixmap
 
 from .._collapsible import QCollapsible
 from ..infoCollector import InfoCollector
+from .._colors import COLORS
 
 
 class BasicSettingBox(QCollapsible):
@@ -38,31 +40,27 @@ class BasicSettingBox(QCollapsible):
 
         self.lab_class = QLabel("Class names:")
         self.list_class = QListWidget()
-
-        self.text_class = QTextEdit()  # TODO: 修改为list类型，添加颜色
         self.btn_class = QPushButton("Reset")
 
         self.lab_temp_msg = QLabel()
         self.lab_temp_img = QLabel()
         self.btn_temp = QPushButton("Setup template")
 
+        self.lay_all.addWidget(self.lab_class)
         self.lay_all.addWidget(self.list_class)
-        self.lay_all.addWidget(self.text_class)
         self.lay_all.addWidget(self.btn_class)
         self.lay_all.addWidget(self.lab_temp_msg)
         self.lay_all.addWidget(self.lab_temp_img)
         self.lay_all.addWidget(self.btn_temp)
 
     def _initData(self):
-        self.is_resetting_class = False
         self.classes = []
         self.colors = []
 
         self.has_template = False
         self.template_path = ""
 
-        self.text_class.setReadOnly(not self.is_resetting_class)
-        self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
+        self.btn_class.setText("Save changes")
         self.lab_temp_img.setVisible(self.has_template)
         self.btn_temp.setText(
             "Change template" if self.has_template else "Setup template"
@@ -74,17 +72,24 @@ class BasicSettingBox(QCollapsible):
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
+        # renew class names
+        self.list_class.clear()
+        class_names = self.info_c.class_names
+        for idx, name in enumerate(class_names):
+            item = QListWidgetItem(name)
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
+            item.setForeground(COLORS[idx + 1])
+            self.list_class.addItem(item)
+
         self.renew()
 
     def resetClass(self):
-        self.is_resetting_class = not self.is_resetting_class
-        self.text_class.setReadOnly(not self.is_resetting_class)
-        self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
-        if self.is_resetting_class:
-            return
-        text = self.text_class.toPlainText()
-        class_names = text.split("\n")
-        class_names = [name for name in class_names if name]  # delete empty lines
+        class_names = []
+        item_num = self.list_class.count()
+        for idx in range(item_num):
+            item = self.list_class.item(idx)
+            class_names.append(item.text())
+
         self.info_c.resetClass(class_names)
         self.renew()
 
@@ -92,14 +97,10 @@ class BasicSettingBox(QCollapsible):
 
     def renew(self):
         # renew class names
-        class_names = self.info_c.class_names
-        self.text_class.setText("\n".join(class_names))
-        self.text_class.setReadOnly(not self.is_resetting_class)
+        self.class_names = self.info_c.class_names
         # renew template messages
         self.has_template = self.info_c.hasTemplate()
         self.lab_temp_img.setVisible(self.has_template)
-        self.text_class.setReadOnly(not self.is_resetting_class)
-        self.btn_class.setText("OK" if self.is_resetting_class else "Reset class name")
         self.btn_temp.setText(
             "Change template" if self.has_template else "Setup template"
         )

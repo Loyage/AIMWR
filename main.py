@@ -230,9 +230,7 @@ class AIMWRApp(QApplication):
                 ok = False
             else:
                 class_num = int(text)
-                with open(
-                    os.path.join(self.work_dir, "AIMWR", "class_names.txt"), "w"
-                ) as f:
+                with open(self.info_c.P_CLASS, "w") as f:
                     for i in range(class_num):
                         f.write(f"class_{i}\n")
 
