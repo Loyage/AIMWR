@@ -74,6 +74,7 @@ class EditToolBox(QCollapsible):
     def _initData(self):
         self.is_editing = False
         self.class_names = []
+        self.ckb_classes = []
 
         self.btn_text = "Save result" if self.is_editing else "Start editing"
         self.btn_edit_save.setText(self.btn_text)
@@ -86,10 +87,12 @@ class EditToolBox(QCollapsible):
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
-        self.resetUI()
-        self.renewStatus()
+        self.resetStatus()
+        self.resetCombSource()
+        self.resetLayFilter()
+        self.resetCombClass()
 
-    def renewStatus(self):
+    def resetStatus(self):
         img_name = self.info_c.img_name_current
         if not img_name:
             return
@@ -104,51 +107,58 @@ class EditToolBox(QCollapsible):
         self.lab_edited.setText(f"Edited: {'Yes' if edited else 'No'}")
         self.lab_edited.setStyleSheet(f"color: {'green' if edited else 'red'}")
 
-    def resetUI(self):
-        class_names = self.info_c.class_names
+    def resetCombSource(self):
+        if not self.info_c:
+            return
 
-        # renew comb_source
+        extracted, classified, edited = self.info_c.img_status[
+            self.info_c.img_name_current
+        ]
+
         self.comb_source.clear()
-        # TODO: 反映是否存在结果，并统计数量
-        self.comb_source.addItems(
-            ["[No source]", "Extraction", "Classification", "Edit"]
-        )
+        self.comb_source.addItem("[No source]")
+        if extracted:
+            self.comb_source.addItem("Extraction")
+        if classified:
+            self.comb_source.addItem("Classification")
+        if edited:
+            self.comb_source.addItem("Edit")
 
-        # renew box_filter
-        self.ckb_classes = []
+    def resetLayFilter(self):
+        class_names = self.info_c.class_names
         class_names_all = class_names.copy()
         class_names_all.insert(0, "[Unclassified]")
-        for class_name in class_names_all:
-            ckb = QCheckBox(class_name)
-            ckb.setChecked(True)
-            self.ckb_classes.append(ckb)
-            self.lay_filter.addWidget(ckb)
-            ckb.stateChanged.connect(self.repaint)
-        self.btn_reselect.setVisible(len(class_names))
-        self.repaint()
+        if self.ckb_classes == []:
+            # first time to reset
+            for class_name in class_names_all:
+                ckb = QCheckBox(class_name)
+                ckb.setChecked(True)
+                self.ckb_classes.append(ckb)
+                self.lay_filter.addWidget(ckb)
+                ckb.stateChanged.connect(self.repaint)
+            self.btn_reselect.setVisible(len(class_names))
 
-        # renew comb_class
+        else:
+            # when class names are reset, reassign text and check state
+            for idx, ckb in enumerate(self.ckb_classes):
+                ckb.setText(class_names_all[idx])
+                ckb.setChecked(True)
+
+    def resetCombClass(self):
         self.comb_class.clear()
         self.comb_class.addItem("[Unclassified]")
-        self.comb_class.addItems(class_names)
+        self.comb_class.addItems(self.info_c.class_names)
 
-    def resetClass(self):
-        class_names = self.info_c.class_names
-        # reset all widgets in box_filter
-        for i in range(self.lay_filter.count()):
-            self.lay_filter.itemAt(i).widget().deleteLater()
-        self.lay_filter.addWidget(self.btn_reselect)
-        for class_name in class_names:
-            ckb = QCheckBox(class_name)
-            ckb.setChecked(True)
-            self.ckb_classes.append(ckb)
-            self.lay_filter.addWidget(ckb)
-            ckb.stateChanged.connect(self.repaint)
+    def atClassNamesReset(self):
+        self.resetCombSource()
+        self.resetLayFilter()
+        self.resetCombClass()
 
-        # reset comb_class
-        self.comb_class.clear()
-        self.comb_class.addItem("[Unclassified]")
-        self.comb_class.addItems(class_names)
+    def atImageChanged(self):
+        self.resetStatus()
+        self.resetCombSource()
+        self.resetLayFilter()
+        self.resetCombClass()
 
     def reselect(self):
         is_all_checked = all([ckb.isChecked() for ckb in self.ckb_classes])

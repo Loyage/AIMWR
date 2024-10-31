@@ -28,7 +28,7 @@ from AIMWR.infoCollector import InfoCollector
 from AIMWR.algorithm import AiContainer
 
 
-# TODO: 添加统计功能
+# TODO: 添加训练结果统计功能、识别结果统计功能
 class AIMWRApp(QApplication):
 
     def __init__(self, *args, **kwargs):
@@ -96,9 +96,9 @@ class AIMWRApp(QApplication):
         self.lay_control.addWidget(self.btn_zoom_reset)
         self.lay_control.addWidget(self.btn_zoom_out)
 
-        # lay_right: img_list + basic_setting + extraction + spacer
-        self.box_img_list = ImageListBox(self.wgt_all)
+        # lay_right: basic_setting + img_list + extraction + classification + edit + train  + spacer
         self.box_setting = BasicSettingBox(self.wgt_all)
+        self.box_img_list = ImageListBox(self.wgt_all)
         self.box_extraction = ExtractionBox(self.wgt_all)
         self.box_classification = ClassificationBox(self.wgt_all)
         self.box_edit = EditToolBox(self.wgt_all)
@@ -170,8 +170,8 @@ class AIMWRApp(QApplication):
         self.btn_zoom_reset.clicked.connect(self.painter.zoomReset)
         self.btn_zoom_out.clicked.connect(self.painter.zoomOut)
 
-        self.box_img_list.select_image.connect(self.select_image)
-        self.box_setting.update_class_setting.connect(self.box_edit.resetClass)
+        self.box_img_list.select_image.connect(self.atImageSelected)
+        self.box_setting.update_class_setting.connect(self.box_edit.atClassNamesReset)
         self.box_extraction.start_template_setting.connect(self.start_template_setting)
         self.box_extraction.finish_extraction.connect(self.finish_extraction)
         self.box_edit.change_source.connect(self.painter.resetRectList)
@@ -249,7 +249,7 @@ class AIMWRApp(QApplication):
         self.box_train.setVisible(True)
         self.box_edit.setVisible(True)
 
-    def select_image(self, image_name: str):
+    def atImageSelected(self, image_name: str):
         is_editing = self.painter.state == self.painter.EDITING
         if is_editing:
             QMessageBox.warning(self.wgt_all, "Warning", "Please finish editing first")
@@ -259,7 +259,7 @@ class AIMWRApp(QApplication):
         self.info_c.img_name_current = image_name
         self.settings.setValue("image_name", self.image_name)
         self.painter.atImageChanged()
-        self.box_edit.renewStatus()
+        self.box_edit.atImageChanged()
 
     def start_template_setting(self):
         self.painter.setDragState()
