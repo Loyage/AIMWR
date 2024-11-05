@@ -162,7 +162,7 @@ class TrainThread(QThread):
             _filter=([True, False], [True, False], [True])
         )
         if len(img_names_edit) == 0:
-            raise ValueError("No image for training")  # TODO: add a warning dialog
+            return None
         well_imgs = []
         class_idxs = []
         for img_name in img_names_edit:
@@ -206,6 +206,9 @@ class TrainThread(QThread):
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
         dataset = self.getDataset()
+        if dataset is None:
+            self.finished.emit()
+            return
         dataloader = torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True
         )
