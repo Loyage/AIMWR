@@ -16,6 +16,9 @@ from ..algorithm import ClassifyThread
 
 
 class ClassificationBox(QCollapsible):
+    finishClassify = Signal()
+    updateBar = Signal(int, int)
+
     def __init__(self, parent: QWidget | None = None):
         """
         A collapsible widget to show tools for image classification.
@@ -161,6 +164,7 @@ class ClassificationBox(QCollapsible):
         )
         self.bar_classify.setValue(0)
         self.bar_classify.setVisible(False)
+        self.classify_finished.emit()
 
     def renew(self):
         img_status = self.info_c.img_status

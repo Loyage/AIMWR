@@ -174,6 +174,7 @@ class AIMWRApp(QApplication):
         self.box_setting.update_class_setting.connect(self.box_edit.atClassNamesReset)
         self.box_extraction.start_template_setting.connect(self.start_template_setting)
         self.box_extraction.finish_extraction.connect(self.finish_extraction)
+        self.box_classification.classify_finished.connect(self.atClassifyFinished)
         self.box_edit.change_source.connect(self.painter.resetRectList)
         self.box_edit.start_edit.connect(self.start_edit)
         self.box_edit.finish_edit.connect(self.finish_edit)
@@ -295,6 +296,9 @@ class AIMWRApp(QApplication):
         self.painter.resetRectList()
         self.renew()
 
+    def atClassifyFinished(self):
+        self.renew()
+
     def start_edit(self):
         self.painter.atEditStart()
 
@@ -314,9 +318,11 @@ class AIMWRApp(QApplication):
         self.painter.atImageChanged()
 
     def renew(self):
+        self.info_c.renewStatus()
         self.box_img_list.renew()
         self.box_setting.renew()
         self.box_classification.renew()
+        self.box_edit.atImageChanged()
         self.painter.atImageChanged()
 
     def warn(self, msg):

@@ -87,12 +87,12 @@ class EditToolBox(QCollapsible):
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
-        self.resetStatus()
-        self.resetCombSource()
-        self.resetLayFilter()
-        self.resetCombClass()
+        self._resetStatus()
+        self._resetCombSource()
+        self._resetLayFilter()
+        self._resetCombClass()
 
-    def resetStatus(self):
+    def _resetStatus(self):
         img_name = self.info_c.img_name_current
         if not img_name:
             return
@@ -107,7 +107,7 @@ class EditToolBox(QCollapsible):
         self.lab_edited.setText(f"Edited: {'Yes' if edited else 'No'}")
         self.lab_edited.setStyleSheet(f"color: {'green' if edited else 'red'}")
 
-    def resetCombSource(self):
+    def _resetCombSource(self):
         if not self.info_c:
             return
 
@@ -124,7 +124,7 @@ class EditToolBox(QCollapsible):
         if edited:
             self.comb_source.addItem("Edit")
 
-    def resetLayFilter(self):
+    def _resetLayFilter(self):
         class_names = self.info_c.class_names
         class_names_all = class_names.copy()
         class_names_all.insert(0, "[Unclassified]")
@@ -144,21 +144,21 @@ class EditToolBox(QCollapsible):
                 ckb.setText(class_names_all[idx])
                 ckb.setChecked(True)
 
-    def resetCombClass(self):
+    def _resetCombClass(self):
         self.comb_class.clear()
         self.comb_class.addItem("[Unclassified]")
         self.comb_class.addItems(self.info_c.class_names)
 
     def atClassNamesReset(self):
-        self.resetCombSource()
-        self.resetLayFilter()
-        self.resetCombClass()
+        self._resetCombSource()
+        self._resetLayFilter()
+        self._resetCombClass()
 
     def atImageChanged(self):
-        self.resetStatus()
-        self.resetCombSource()
-        self.resetLayFilter()
-        self.resetCombClass()
+        self._resetStatus()
+        self._resetCombSource()
+        self._resetLayFilter()
+        self._resetCombClass()
 
     def reselect(self):
         is_all_checked = all([ckb.isChecked() for ckb in self.ckb_classes])

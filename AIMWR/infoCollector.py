@@ -22,7 +22,7 @@ class InfoCollector:
 
         self._makeDirsFiles()
         self._loadClass()
-        self._loadStatus()
+        self.renewStatus()
 
         self.classes_show = [
             idx for idx in range(len(self.class_names))
@@ -54,7 +54,7 @@ class InfoCollector:
         class_names = [name.strip() for name in class_names]
         self.class_names = class_names
 
-    def _loadStatus(self):
+    def renewStatus(self):
         image_names = self.getImageNames()
         for img_name in image_names:
             extracted = self.hasExtracted(img_name)
