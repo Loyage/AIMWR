@@ -295,18 +295,17 @@ class AIMWRApp(QApplication):
         self.box_extraction.extractor.resetTemplate(self.info_c.P_TEMPLATE)
 
     def atExtractionFinished(self):
-        self.painter.resetRectList()
-        self.renew()
+        self.info_c.renewStatus()
         self.box_edit.tryChooseSource("Extraction")
 
     def atClassifyFinished(self):
-        self.renew()
+        self.info_c.renewStatus()
         self.box_edit.tryChooseSource("Classification")
 
     def atEditFinish(self):
         self.painter.setNormalState()
         self.painter.atEditFinish()
-        self.renew()
+        self.info_c.renewStatus()
         self.tryChooseSource("Edit")
 
     def atSourceChanged(self):
@@ -329,8 +328,8 @@ class AIMWRApp(QApplication):
         self.info_c.renewStatus()
         self.box_img_list.renew()
         self.box_setting.renew()
-        self.box_classification.renew()
-        self.box_edit.atImageChanged()
+        # self.box_classification.renew()
+        # self.box_edit.atImageChanged()
         self.painter.atImageChanged()
 
     def warn(self, msg):

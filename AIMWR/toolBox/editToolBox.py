@@ -128,6 +128,7 @@ class EditToolBox(QCollapsible):
         class_names = self.info_c.class_names
         class_names_all = class_names.copy()
         class_names_all.insert(0, "[Unclassified]")
+        
         if self.ckb_classes == []:
             # first time to reset
             for class_name in class_names_all:

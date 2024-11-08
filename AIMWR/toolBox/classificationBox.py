@@ -77,7 +77,6 @@ class ClassificationBox(QCollapsible):
 
     def setInfoCollector(self, info_c: InfoCollector):
         self.info_c = info_c
-        self.renew()
 
     def setAiContainer(self, ai):
         self.ai = ai
@@ -167,11 +166,3 @@ class ClassificationBox(QCollapsible):
         self.bar_classify.setVisible(False)
         self.classify_finished.emit()
 
-    def renew(self):
-        img_status = self.info_c.img_status
-        img_classified = [img for img in img_status if img_status[img][1]]
-        img_extracted = [img for img in img_status if img_status[img][0]]
-        self.num_classified = len(img_classified)
-        self.num_extracted = len(img_extracted)
-
-        self.box_model.lab_msg.setText(self.model_msg)

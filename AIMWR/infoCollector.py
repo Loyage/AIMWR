@@ -24,7 +24,7 @@ class InfoCollector:
         self._loadClass()
         self.renewStatus()
 
-        self.classes_show = [
+        self.classes_show = [-1] + [
             idx for idx in range(len(self.class_names))
         ]  # classes to show, bound to checkboxes in box_edit
         self.class_edit = -1  # class to assign, bound to combobox in box_edit
