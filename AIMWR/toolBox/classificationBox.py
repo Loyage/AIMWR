@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QProgressBar,
 )
+from PySide6.QtCore import Signal
 
 from ._modelGroupBox import ModelGroupBox
 from .._collapsible import QCollapsible
@@ -16,7 +17,7 @@ from ..algorithm import ClassifyThread
 
 
 class ClassificationBox(QCollapsible):
-    finishClassify = Signal()
+    classify_finished = Signal()
     updateBar = Signal(int, int)
 
     def __init__(self, parent: QWidget | None = None):
@@ -69,7 +70,7 @@ class ClassificationBox(QCollapsible):
 
     def _initSignals(self):
         self.box_model.model_chosen.connect(self.atModelChosen)
-        self.btn_classify.clicked.connect(self.classify)
+        self.btn_classify.clicked.connect(self.doClassify)
 
     def atModelChosen(self):
         self.box_model.saveSettings("classification_model")
@@ -81,7 +82,7 @@ class ClassificationBox(QCollapsible):
     def setAiContainer(self, ai):
         self.ai = ai
 
-    def classify(self):
+    def doClassify(self):
         model_path = self.box_model.line_path.text()
 
         # check if ai_thread is not running
@@ -158,9 +159,9 @@ class ClassificationBox(QCollapsible):
     def stopClassify(self):
         self.ai.thread.stop()
 
-    def finishClassify(self):
+    def finishClassify(self, num_classified):
         QMessageBox.information(
-            self.widget, "Info", "Classification finished.", QMessageBox.Ok
+            self.widget, "Info", f"Classification finished. {num_classified} images processed.", QMessageBox.Ok
         )
         self.bar_classify.setValue(0)
         self.bar_classify.setVisible(False)

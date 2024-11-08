@@ -74,11 +74,11 @@ class PainterLabel(QLabel):
                 self.is_paintable = False
 
     def setRectNormal(self):
-        if self.info_c.source_rect == "Edit":
+        if self.info_c.rect_source == "Edit":
             res_clas_list = self.info_c.getEdit(self.info_c.img_name_current)
-        elif self.info_c.source_rect == "Classification":
+        elif self.info_c.rect_source == "Classification":
             res_clas_list = self.info_c.getClassified(self.info_c.img_name_current)
-        elif self.info_c.source_rect == "Extraction":
+        elif self.info_c.rect_source == "Extraction":
             res_clas_list = self.info_c.getExtracted(self.info_c.img_name_current)
         else:
             res_clas_list = []

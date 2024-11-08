@@ -14,7 +14,7 @@ from ..infoCollector import InfoCollector
 
 
 class EditToolBox(QCollapsible):
-    change_source = Signal(name="change_source")
+    source_changed = Signal(name="source_changed")
     start_edit = Signal(name="start_edit")
     finish_edit = Signal(name="finish_edit")
     classes_rechoose = Signal(name="classes_rechoose")
@@ -64,7 +64,7 @@ class EditToolBox(QCollapsible):
         self.lay_status.addWidget(self.lab_classified)
         self.lay_status.addWidget(self.lab_edited)
 
-        # box_filter: check boxes for class names, and a button to reselect
+        # box_filter: check boxes for class names, and a button to reselect class names
         self.lay_filter = QVBoxLayout()
         self.box_show.setLayout(self.lay_filter)
         self.btn_reselect = QPushButton("Reselect")
@@ -80,9 +80,9 @@ class EditToolBox(QCollapsible):
         self.btn_edit_save.setText(self.btn_text)
 
     def _initSignals(self):
-        self.btn_reselect.clicked.connect(self.reselect)
+        self.btn_reselect.clicked.connect(self.reselectClasses)
         self.btn_edit_save.clicked.connect(self.editOrSave)
-        self.comb_source.currentIndexChanged.connect(self.changeSource)
+        self.comb_source.currentIndexChanged.connect(self.atSourceChanged)
         self.comb_class.currentIndexChanged.connect(self.assignClass)
 
     def setInfoCollector(self, info_c: InfoCollector):
@@ -160,7 +160,13 @@ class EditToolBox(QCollapsible):
         self._resetLayFilter()
         self._resetCombClass()
 
-    def reselect(self):
+    def tryChooseSource(self, source: str):
+        idx = self.comb_source.findText(source)
+        if idx != -1:
+            self.comb_source.setCurrentIndex(idx)
+            self.atSourceChanged()
+
+    def reselectClasses(self):
         is_all_checked = all([ckb.isChecked() for ckb in self.ckb_classes])
         if not is_all_checked:
             for ckb in self.ckb_classes:
@@ -178,10 +184,10 @@ class EditToolBox(QCollapsible):
         self.info_c.classes_show = checked_idx
         self.classes_rechoose.emit()
 
-    def changeSource(self):
+    def atSourceChanged(self):
         source_text = self.comb_source.currentText()
-        self.info_c.source_rect = source_text
-        self.change_source.emit()
+        self.info_c.rect_source = source_text
+        self.source_changed.emit()
 
     def assignClass(self):
         class_idx = self.comb_class.currentIndex()

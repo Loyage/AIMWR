@@ -71,7 +71,7 @@ def getWellsTensor(img, wells_loc):
 
 
 class ClassifyThread(QThread):
-    finished = Signal()
+    finished = Signal(int, name="finished")
     complete = Signal(int, int, name="complete")
 
     def __init__(
@@ -125,7 +125,7 @@ class ClassifyThread(QThread):
 
             self.complete.emit(idx + 1, len(self.img_names))
 
-        self.finished.emit()
+        self.finished.emit(len(self.img_names))
 
     def stop(self):
         self.is_stop = True

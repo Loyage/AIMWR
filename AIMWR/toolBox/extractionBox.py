@@ -72,7 +72,7 @@ class ExtractionBox(QCollapsible):
         )
 
     def _initSignals(self):
-        self.btn_extract.clicked.connect(self.extract)
+        self.btn_extract.clicked.connect(self.doExtract)
         self.btn_temp.clicked.connect(self.start_template_setting.emit)
 
     def setInfoCollector(self, info_c: InfoCollector):
@@ -99,7 +99,7 @@ class ExtractionBox(QCollapsible):
         else:
             self.lab_temp_msg.setText("No template image found.")
 
-    def extract(self):
+    def doExtract(self):
         # check if template image exists
         if not self.info_c.hasTemplate():
             QMessageBox.warning(

@@ -29,6 +29,8 @@ from AIMWR.algorithm import AiContainer
 
 
 # TODO: 添加训练结果统计功能、识别结果统计功能
+# TODO: 处理完成后，优先选中处理结果进行显示
+# TODO：切换图片时，优先选中同一类型结果进行展示
 class AIMWRApp(QApplication):
 
     def __init__(self, *args, **kwargs):
@@ -173,14 +175,14 @@ class AIMWRApp(QApplication):
         self.box_img_list.select_image.connect(self.atImageSelected)
         self.box_setting.update_class_setting.connect(self.box_edit.atClassNamesReset)
         self.box_extraction.start_template_setting.connect(self.start_template_setting)
-        self.box_extraction.finish_extraction.connect(self.finish_extraction)
+        self.box_extraction.finish_extraction.connect(self.atExtractionFinished)
         self.box_classification.classify_finished.connect(self.atClassifyFinished)
-        self.box_edit.change_source.connect(self.painter.resetRectList)
-        self.box_edit.start_edit.connect(self.start_edit)
-        self.box_edit.finish_edit.connect(self.finish_edit)
-        self.box_edit.classes_rechoose.connect(self.classes_rechoose)
+        self.box_edit.source_changed.connect(self.atSourceChanged)
+        self.box_edit.start_edit.connect(self.atEditStart)
+        self.box_edit.finish_edit.connect(self.atEditFinish)
+        self.box_edit.classes_rechoose.connect(self.atEditClassesRechoosed)
 
-        self.painter.finish_template_setting.connect(self.finish_template_setting)
+        self.painter.finish_template_setting.connect(self.atTemplateSettingFinish)
 
     def changeWorkspace(self):
         self.settings.setValue("work_dir", "")
@@ -267,7 +269,7 @@ class AIMWRApp(QApplication):
         # disable other buttons
         self.lay_right.setEnabled(False)
 
-    def finish_template_setting(self, pixmap: QPixmap):
+    def atTemplateSettingFinish(self, pixmap: QPixmap):
         self.painter.setNormalState()
         # enable other buttons
         self.lay_right.setEnabled(True)
@@ -292,22 +294,28 @@ class AIMWRApp(QApplication):
         # reset template image in extractor
         self.box_extraction.extractor.resetTemplate(self.info_c.P_TEMPLATE)
 
-    def finish_extraction(self):
+    def atExtractionFinished(self):
         self.painter.resetRectList()
         self.renew()
+        self.box_edit.tryChooseSource("Extraction")
 
     def atClassifyFinished(self):
         self.renew()
+        self.box_edit.tryChooseSource("Classification")
 
-    def start_edit(self):
-        self.painter.atEditStart()
-
-    def finish_edit(self):
+    def atEditFinish(self):
         self.painter.setNormalState()
         self.painter.atEditFinish()
         self.renew()
+        self.tryChooseSource("Edit")
 
-    def classes_rechoose(self):
+    def atSourceChanged(self):
+        self.painter.resetRectList()
+
+    def atEditStart(self):
+        self.painter.atEditStart()
+
+    def atEditClassesRechoosed(self):
         self.painter.resetRectList()
 
     def cleanImage(self):

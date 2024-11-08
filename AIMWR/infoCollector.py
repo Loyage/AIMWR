@@ -28,7 +28,7 @@ class InfoCollector:
             idx for idx in range(len(self.class_names))
         ]  # classes to show, bound to checkboxes in box_edit
         self.class_edit = -1  # class to assign, bound to combobox in box_edit
-        self.source_rect = ""  # source for rect, bound to combobox in box_edit
+        self.rect_source = ""  # source for rect, bound to combobox in box_edit
         self.model_dir = ""  # model directory in last choose
 
     def _makeDirsFiles(self):
