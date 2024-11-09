@@ -29,8 +29,7 @@ from AIMWR.algorithm import AiContainer
 
 
 # TODO: 添加训练结果统计功能、识别结果统计功能
-# TODO: 处理完成后，优先选中处理结果进行显示
-# TODO：切换图片时，优先选中同一类型结果进行展示
+# TODO: 添加编辑部分保存功能
 class AIMWRApp(QApplication):
 
     def __init__(self, *args, **kwargs):
