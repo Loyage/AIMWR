@@ -128,7 +128,7 @@ class EditToolBox(QCollapsible):
         class_names = self.info_c.class_names
         class_names_all = class_names.copy()
         class_names_all.insert(0, "[Unclassified]")
-        
+
         if self.ckb_classes == []:
             # first time to reset
             for class_name in class_names_all:
@@ -157,15 +157,25 @@ class EditToolBox(QCollapsible):
 
     def atImageChanged(self):
         self._resetStatus()
+        pres_source = self.comb_source.currentText()
         self._resetCombSource()
+        self.tryChooseSource(pres_source)
         self._resetLayFilter()
         self._resetCombClass()
 
     def tryChooseSource(self, source: str):
+        if self.comb_source.count() == 1:
+            self.comb_source.setCurrentIndex(0)
+            self.atSourceChanged()
+            return
+        
         idx = self.comb_source.findText(source)
         if idx != -1:
             self.comb_source.setCurrentIndex(idx)
-            self.atSourceChanged()
+        else:
+            len_source = self.comb_source.count()
+            self.comb_source.setCurrentIndex(len_source-1)
+        self.atSourceChanged()
 
     def reselectClasses(self):
         is_all_checked = all([ckb.isChecked() for ckb in self.ckb_classes])

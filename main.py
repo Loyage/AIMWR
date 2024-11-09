@@ -324,14 +324,6 @@ class AIMWRApp(QApplication):
             self.info_c.img_name_current = None
         self.painter.atImageChanged()
 
-    def renew(self):
-        self.info_c.renewStatus()
-        self.box_img_list.renew()
-        self.box_setting.renew()
-        # self.box_classification.renew()
-        # self.box_edit.atImageChanged()
-        self.painter.atImageChanged()
-
     def warn(self, msg):
         QMessageBox.warning(self.wgt_all, "Warning", msg, QMessageBox.Ok)
 
